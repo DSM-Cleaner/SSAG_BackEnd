@@ -32,7 +32,7 @@ jobs:
     - run: yarn test
     
     - name: zip 생성
-      run: zip -qq -r ./build-be.zip
+      run: zip -r ./ssag.zip ./deploy
       shell: bash
     
     - name: AWS configure credentials
@@ -43,7 +43,7 @@ jobs:
           aws-region: ap-northeast-2
           
     - name: S3 업로드
-      run: aws s3 cp --region ap-northeast-2 ./build-be.zip s3://codesquad-deploy/build-be.zip
+      run: aws s3 cp --region ap-northeast-2 ./build-ssag.zip s3://codesquad-deploy/build-ssag.zip
 
     - name: Code Deploy
-      run: aws deploy create-deployment --application-name EC2-S3-Deploy-FE --deployment-config-name CodeDeployDefault.OneAtATime --deployment-group-name dev-BE --s3-location bucket=ssag,bundleType=zip,key=build-be.zip
+      run: aws deploy create-deployment --application-name EC2-S3-Deploy-FE --deployment-config-name CodeDeployDefault.OneAtATime --deployment-group-name dev-BE --s3-location bucket=ssag,bundleType=zip,key=build-ssag.zip
