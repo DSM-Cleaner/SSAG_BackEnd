@@ -26,14 +26,13 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'yarn'
-        key: ${{ secrets.SSH_KEY }}
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USER }}
-        script: |
-            cd server
-            git reset --hard
-            git fetch
-            git pull
+ 
     - run: yarn
     - run: yarn run build 
     - run: yarn test
+    - name: AWS configure credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
