@@ -30,9 +30,20 @@ jobs:
     - run: yarn
     - run: yarn run build 
     - run: yarn test
+    
+    - name: zip 생성
+      run: zip -qq -r ./build-backend.zip
+      shell: bash
+    
     - name: AWS configure credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-northeast-2
+          
+    - name: S3 업로드
+      run: aws s3 cp --region ap-northeast-2 ./build-be.zip s3://codesquad-deploy/build-be.zip
+
+    - name: Code Deploy
+      run: aws deploy create-deployment --application-name EC2-S3-Deploy-FE --deployment-config-name CodeDeployDefault.OneAtATime --deployment-group-name dev-BE --s3-location bucket=ssag,bundleType=zip,key=build-be.zip
