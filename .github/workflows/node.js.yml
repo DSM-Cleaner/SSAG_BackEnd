@@ -41,7 +41,7 @@ jobs:
           cd ../
           
       - name: Make tar file
-        run: tar -cpvzf ./$GITHUB_SHA.tgz *
+        run: tar -cpvzf ./ssag.tgz *
         shell: bash
         
       - name: Configure AWS credentials
@@ -55,7 +55,7 @@ jobs:
         run: |
           aws s3 cp \
             --region ap-northeast-2 \ # 한국서버
-            ./$GITHUB_SHA.tgz s3://ssag/$PROJECT_NAME/$GITHUB_SHA.tgz
+            ./ssag.tgz s3://ssag/ssag.tgz
 
       - name: Code Deploy
         run: aws deploy create-deployment --application-name EC2-S3-Deploy-BE --file-exists-behavior OVERWRITE --deployment-config-name CodeDeployDefault.OneAtATime --deployment-group-name ssag --s3-location bucket=ssag,bundleType=tgz,key=$PROJECT_NAME/$GITHUB_SHA.tgz
