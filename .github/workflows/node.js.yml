@@ -20,18 +20,17 @@ jobs:
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
        
     steps:
-      - uses: actions/checkout@v3
+      - name: checkout
+        uses: actions/checkout@v3
+      
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'yarn'
       
       - name: delete package-lock.json
         run: rm package-lock.json
 
       - name: Install dependencies
-        run: yarn install
+        run: yarn
 
       - name: bulid file
         run: yarn run build
