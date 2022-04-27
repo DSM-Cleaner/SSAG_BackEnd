@@ -58,4 +58,4 @@ jobs:
             ./ssag.tgz s3://ssag/ssag.tgz
 
       - name: Code Deploy
-        run: aws deploy create-deployment --application-name EC2-S3-Deploy-BE --file-exists-behavior OVERWRITE --deployment-config-name CodeDeployDefault.AllAtOnce --deployment-group-name ssag --s3-location bucket=ssag,bundleType=tgz,key=$PROJECT_NAME/$GITHUB_SHA.tgz
+        run: aws deploy create-deployment --application-name EC2-S3-Deploy-BE --file-exists-behavior OVERWRITE --deployment-config-name CodeDeployDefault.AllAtOnce --deployment-group-name ssag --s3-location bucket=ssag,bundleType=tgz,key=ssag.tgz
