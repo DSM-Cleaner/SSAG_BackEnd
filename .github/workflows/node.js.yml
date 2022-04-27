@@ -9,9 +9,9 @@ on:
 jobs:
   build:
 
-    runs-on: linux
+    runs-on: ubuntu-latest
 
-	# 노드 14.x 버젼 사용
+	# 노드 16.x 버젼 사용
     strategy:
       matrix:
         node-version: [16.x]
