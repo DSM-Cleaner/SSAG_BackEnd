@@ -46,4 +46,4 @@ jobs:
       run: aws s3 cp --region ap-northeast-2 ./ssag.zip s3://ssag/ssag.zip
 
     - name: Code Deploy
-      run: aws deploy create-deployment --application-name EC2-S3-Deploy-BE --deployment-config-name CodeDeployDefault.OneAtATime --deployment-group-name dev-BE --s3-location bucket=ssag,bundleType=zip,key=ssag.zip
+      run: aws deploy create-deployment --application-name EC2-S3-Deploy-BE --deployment-config-name CodeDeployDefault.OneAtOnce --deployment-group-name ssag --s3-location bucket=ssag,bundleType=zip,key=ssag.zip
