@@ -54,7 +54,7 @@ jobs:
       - name: Upload to S3
         run: |
           aws s3 cp \
-            --region ap-northeast-2 \ # 한국서버
+            --region ap-northeast-2 \
             ./ssag.tgz s3://ssag/ssag.tgz
 
       - name: Code Deploy
