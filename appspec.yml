@@ -3,7 +3,7 @@ os: linux
 
 files:
   - source: /
-    destination: /home/ec2-user/backend/zip/
+    destination: /home/ec2-user/backend/
 permissions:
   - object: /home/ec2-user
     pattern: '**'
