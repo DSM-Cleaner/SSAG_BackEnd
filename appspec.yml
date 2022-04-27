@@ -1,18 +1,18 @@
-version: 1.3.2
+version: 0.0
 os: linux
-files: 
-        - source: /
-          destination: /home/ec2-user/backend/zip/
-          overwirte: yes
-         
-perimissions: 
- - object: /
-   pattern: "**"
-   owner: ec2-user
-   group: ec2-user
-   
+
+files:
+  - source: /
+    destination: /home/ec2-user/backend/zip/
+permissions:
+  - object: /home/ec2-user
+    pattern: '**'
+    owner: ec2-user
+    group: ec2-user
 hooks:
-  ApplicationStart:
-   - location: scripts/deploy.sh
-     timeout: 60
-     runas: ec2-user
+  BeforeInstall:
+    - location: scripts/before_deploy.sh
+      runas: ec2-user
+  AfterInstall:
+    - location: scripts/after_deploy.sh
+      runas: ec2-user
