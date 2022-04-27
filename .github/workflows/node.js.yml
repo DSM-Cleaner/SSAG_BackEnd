@@ -1,0 +1,67 @@
+name: Node.js CI
+
+on:
+  push:
+    branches: [ cicd_test ]
+  pull_request:
+    branches: [ cicd_test ]
+
+jobs:
+  build:
+
+    runs-on: linux
+
+	# 노드 14.x 버젼 사용
+    strategy:
+      matrix:
+        node-version: [16.x]
+        
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+    
+    	# 윈도우 환경과 리눅스 환경에서 충돌 회피를 위한 package-lock.json 삭제
+      - name: delete package-lock.json
+        run: rm package-lock.json
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: bulid file
+        run: yarn run build
+
+	# secret 폴더 생성후 .env파일 생성
+        # 폴더를 생성하지 않으면 .env 파일이 .gitignore에 의해 무시당해서 안생긴다.
+      - name: Create env file
+        run: |
+          mkdir secret
+          cd secret
+          touch .env.development
+          cat << EOF >> .env.development
+          ${{ secrets.ENV }}
+          EOF
+          cd ../
+          
+	# tar파일 생성
+      - name: Make tar file
+        run: tar -cpvzf ./$GITHUB_SHA.tgz *
+        shell: bash
+        
+	# AWS 인증을 사용함
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
+	# S3 업로드
+      - name: Upload to S3
+        run: |
+          aws s3 cp \
+            --region ap-northeast-2 \ # 한국서버
+            ./$GITHUB_SHA.tgz s3://ssag/$PROJECT_NAME/$GITHUB_SHA.tgz
+	# 괄호 내용 제거 후 맞게 입력
+      - name: Code Deploy
+        run: aws deploy create-deployment --application-name EC2-S3-Deploy-BE --file-exists-behavior OVERWRITE --deployment-config-name CodeDeployDefault.OneAtATime --deployment-group-name ssag --s3-location bucket=ssag,bundleType=tgz,key=$PROJECT_NAME/$GITHUB_SHA.tgz
