@@ -1,5 +1,5 @@
 #!/bin/bash
-REPOSITORY=/home/ec2-user/backend-test/
+REPOSITORY=/home/ec2-user/backend/
 cd $REPOSITORY
 
 # nvm 환경변수 등록
