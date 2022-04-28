@@ -2,6 +2,10 @@
 REPOSITORY=/home/ec2-user/ssag/
 cd $REPOSITORY
 
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | bash
+source ~/.bashrc
+nvm install v16.10.0
+
 npm i -g yarn
 
 # nvm 환경변수 등록
