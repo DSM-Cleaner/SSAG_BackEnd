@@ -16,5 +16,6 @@ npm i -g yarn
 # cd secret
 # sudo mv .env.development ../
 # cd ..
+fuser -k -n tcp 3000
 
 yarn run start
