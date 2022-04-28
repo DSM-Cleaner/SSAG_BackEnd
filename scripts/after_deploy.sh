@@ -18,4 +18,4 @@ npm i -g yarn
 # cd ..
 fuser -k -n tcp 3000
 
-nohup yarn start
+nohup yarn start &
