@@ -3,7 +3,7 @@ os: linux
 
 files:
   - source: /
-    destination: /home/ec2-user/backend/
+    destination: /home/ec2-user/ssag/
 permissions:
   - object: /home/ec2-user
     pattern: "**"
