@@ -18,6 +18,6 @@ npm i pm2 -g
 # cd secret
 # sudo mv .env.development ../
 # cd ..
-fuser -k -n tcp 3000
+pm2 kill
 
 pm2 start dist/main.js
