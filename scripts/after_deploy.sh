@@ -18,4 +18,4 @@ npm i -g yarn
 # cd ..
 fuser -k -n tcp 3000
 
-nohup node server.js > home/ec2-user/log 2>&1 &
+nohup yarn start > home/ec2-user/log 2>&1 &
