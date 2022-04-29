@@ -2,9 +2,9 @@
 REPOSITORY=/home/ec2-user/ssag/
 cd $REPOSITORY
 
-# curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | bash -y
-# source ~/.bashrc
-# nvm install v16.10.0 -y
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | bash -y
+source ~/.bashrc
+nvm install v16.10.0 -y
 
 npm i -g yarn
 
