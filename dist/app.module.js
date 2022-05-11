@@ -10,11 +10,24 @@ exports.AppModule = void 0;
 const common_1 = require("@nestjs/common");
 const app_controller_1 = require("./app.controller");
 const app_service_1 = require("./app.service");
+const user_module_1 = require("./user/user.module");
+const teacher_module_1 = require("./teacher/teacher.module");
+const cleaning_module_1 = require("./cleaning/cleaning.module");
+const room_cleaning_module_1 = require("./room-cleaning/room-cleaning.module");
+const room_module_1 = require("./room/room.module");
+const typeorm_config_module_1 = require("./typeorm/typeorm-config.module");
 let AppModule = class AppModule {
 };
 AppModule = __decorate([
     (0, common_1.Module)({
-        imports: [],
+        imports: [
+            typeorm_config_module_1.TypeOrmConfigModule,
+            user_module_1.UserModule,
+            teacher_module_1.TeacherModule,
+            cleaning_module_1.CleaningModule,
+            room_cleaning_module_1.RoomCleaningModule,
+            room_module_1.RoomModule,
+        ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],
     })
