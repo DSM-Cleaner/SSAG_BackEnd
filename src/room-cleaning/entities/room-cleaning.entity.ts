@@ -16,7 +16,7 @@ export class RoomCleaning {
   light: boolean;
 
   @Column()
-  pulg: boolean;
+  plug: boolean;
 
   @Column()
   shoes: boolean;

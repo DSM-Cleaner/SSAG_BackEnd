@@ -10,4 +10,7 @@ export class Teacher {
 
   @Column()
   name: string;
+
+  @Column()
+  gender: boolean;
 }
