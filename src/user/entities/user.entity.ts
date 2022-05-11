@@ -6,19 +6,17 @@ import {
   JoinColumn,
   ManyToOne,
   OneToMany,
+  PrimaryColumn,
   PrimaryGeneratedColumn,
 } from "typeorm";
 
 @Entity("user")
 export class User {
-  @PrimaryGeneratedColumn()
+  @PrimaryColumn()
   id: number;
 
   @Column()
   code: string;
-
-  @Column()
-  gcn: number;
 
   @Column()
   name: string;
