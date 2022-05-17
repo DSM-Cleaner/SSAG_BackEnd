@@ -7,9 +7,13 @@ import { CleaningModule } from "./cleaning/cleaning.module";
 import { RoomCleaningModule } from "./room-cleaning/room-cleaning.module";
 import { RoomModule } from "./room/room.module";
 import { TypeOrmConfigModule } from "./typeorm/typeorm-config.module";
+import { ConfigModule } from "@nestjs/config";
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true
+    }),
     TypeOrmConfigModule,
     UserModule,
     TeacherModule,
