@@ -20,6 +20,7 @@ import { ConfigModule } from "@nestjs/config";
     CleaningModule,
     RoomCleaningModule,
     RoomModule,
+    ConfigModule.forRoot({ isGlobal: true }),
   ],
   controllers: [AppController],
   providers: [AppService],
