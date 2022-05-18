@@ -1,5 +1,5 @@
-import { Cleaning } from "src/cleaning/entities/cleaning.entity";
-import { Room } from "src/room/entites/room.entity";
+import { Cleaning } from 'src/cleaning/entities/cleaning.entity';
+import { Room } from 'src/room/entities/room.entity';
 import {
   Column,
   Entity,
@@ -7,11 +7,14 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryColumn,
-  PrimaryGeneratedColumn,
-} from "typeorm";
+} from 'typeorm';
 
-@Entity("user")
+@Entity('user')
 export class User {
+
+  constructor(init?: Partial<User>) {
+    Object.assign(this, init);
+  }
   @PrimaryColumn()
   id: number;
 
@@ -28,15 +31,15 @@ export class User {
   room_id: number;
 
   @ManyToOne(() => Room, (room) => room.user, {
-    onUpdate: "CASCADE",
-    onDelete: "CASCADE",
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: "room_id" })
+  @JoinColumn({ name: 'room_id' })
   room: Room;
 
   @OneToMany(() => Cleaning, (cleaning) => cleaning.user, {
-    onUpdate: "CASCADE",
-    onDelete: "CASCADE",
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE',
   })
   cleaning: Cleaning[];
 }
