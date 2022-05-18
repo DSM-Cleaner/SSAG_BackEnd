@@ -5,7 +5,8 @@ import {
   HttpStatus,
   Post,
 } from '@nestjs/common';
-import { loginUserDTO } from './dto/login-user.dto';
+import { UserLoginResponseDTO } from 'src/user/dto/user-login-response.dto';
+import { userLoginDTO } from './dto/user-login.dto';
 import { UserService } from './user.service';
 
 @Controller('user')
@@ -14,8 +15,8 @@ export class UserController {
 
   @Post()
   async login(
-    @Body() loginUserDTO: loginUserDTO,
-  ): Promise<{ authorization: string; id: number }> {
+    @Body() loginUserDTO: userLoginDTO,
+  ): Promise<UserLoginResponseDTO> {
     try {
       const user = await this.userService.compareCode(loginUserDTO.code);
       if (typeof user === 'undefined') {
@@ -23,7 +24,7 @@ export class UserController {
       }
 
       const token: string = await this.userService.login(user);
-      return { authorization: token, id: user.id };
+      return new UserLoginResponseDTO({ authorization: token, id: user.id });
     } catch (error) {
       if (error.message === 'NOTFOUND 찾을 수 없습니다.') {
         throw new HttpException(

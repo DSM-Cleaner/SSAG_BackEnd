@@ -1,7 +1,8 @@
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
-import { loginUserDTO } from 'src/user/dto/login-user.dto';
+import { UserLoginResponseDTO } from 'src/user/dto/user-login-response.dto';
+import { userLoginDTO } from 'src/user/dto/user-login.dto';
 import { User } from 'src/user/entities/user.entity';
 import { UserRepository } from 'src/user/entities/user.repository';
 import { UserService } from 'src/user/user.service';
@@ -42,7 +43,7 @@ describe('UserController', () => {
       jest.spyOn(service, 'compareCode').mockResolvedValue(undefined);
 
       try {
-        await controller.login(new loginUserDTO({ code: 'aaaaaa' }));
+        await controller.login(new userLoginDTO({ code: 'aaaaaa' }));
       } catch (error) {
         expect(error.message).toBe('NOTFOUND 찾을 수 없습니다.');
       }
@@ -60,11 +61,13 @@ describe('UserController', () => {
       );
 
       const result: { authorization: string; id: number } =
-        await controller.login(new loginUserDTO({ code: '111111' }));
-      expect(result).toStrictEqual({
-        authorization: result.authorization,
-        id: 3202,
-      });
+        await controller.login(new userLoginDTO({ code: '111111' }));
+      expect(result).toStrictEqual(
+        new UserLoginResponseDTO({
+          authorization: result.authorization,
+          id: 3202,
+        }),
+      );
     });
   });
 });

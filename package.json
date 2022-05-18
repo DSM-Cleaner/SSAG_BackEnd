@@ -65,12 +65,12 @@
     ],
     "rootDir": "src",
     "moduleNameMapper": {
-      "^root/(.*)$": "<rootDir>/$1",
-      "^user/(.*)$": "<rootDir>/user/$1",
-      "^teacher/(.*)$": "<rootDir>/teacher/$1",
-      "^room-cleaning/(.*)$": "<rootDir>/room-cleaning/$1",
-      "^room/(.*)$": "<rootDir>/room/$1",
-      "^cleaning/(.*)$": "<rootDir>/cleaning/$1"
+      "src/(.*)$": "<rootDir>/$1",
+      "user/(.*)$": "<rootDir>/user/$1",
+      "teacher/(.*)$": "<rootDir>/teacher/$1",
+      "room-cleaning/(.*)$": "<rootDir>/room-cleaning/$1",
+      "room/(.*)$": "<rootDir>/room/$1",
+      "cleaning/(.*)$": "<rootDir>/cleaning/$1"
     },
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {

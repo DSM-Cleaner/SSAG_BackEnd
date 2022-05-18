@@ -12,8 +12,8 @@ import { UserController } from './user.controller';
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
-        secret: config.get('JWT_SECRET'),
-        signOptions: { expiresIn: config.get('EXPIRES_IN') },
+        secret: config.get('JWT_SECRET_KEY'),
+        signOptions: { expiresIn: config.get('TOKEN_EXPIRES_TIME') },
       }),
     }),
   ],
