@@ -10,7 +10,6 @@ import { Payload } from "../payload/jwt.payload";
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
-    @InjectRepository(Teacher)
     private readonly teacherRepository: TeacherRepository
   ) {
     super({
