@@ -7,6 +7,7 @@ import { CleaningModule } from "./cleaning/cleaning.module";
 import { RoomCleaningModule } from "./room-cleaning/room-cleaning.module";
 import { RoomModule } from "./room/room.module";
 import { TypeOrmConfigModule } from "./typeorm/typeorm-config.module";
+import { ConfigModule } from "@nestjs/config";
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { TypeOrmConfigModule } from "./typeorm/typeorm-config.module";
     CleaningModule,
     RoomCleaningModule,
     RoomModule,
+    ConfigModule.forRoot({ isGlobal: true }),
   ],
   controllers: [AppController],
   providers: [AppService],
