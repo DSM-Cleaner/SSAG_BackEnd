@@ -8,5 +8,6 @@ import { CleaningRepository } from "./entities/cleaning.repository";
   imports: [TypeOrmModule.forFeature([CleaningRepository])],
   controllers: [CleaningController],
   providers: [CleaningService],
+  exports: [CleaningService],
 })
 export class CleaningModule {}
