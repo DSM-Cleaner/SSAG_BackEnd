@@ -13,7 +13,7 @@ import { UserController } from './user.controller';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         secret: config.get('JWT_SECRET_KEY'),
-        signOptions: { expiresIn: config.get('TOKEN_EXPIRES_TIME') },
+        signOptions: { expiresIn: config.get('TOKEN_EXPIRED_TIME') },
       }),
     }),
   ],
