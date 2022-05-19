@@ -1,5 +1,5 @@
 export type Payload = {
   name: string;
-  teacherId: number;
+  id: number;
   gender: boolean;
 };
