@@ -22,4 +22,4 @@ npm i pm2 -g
 # cd ..
 pm2 kill
 
-pm2 start dist/main.js
+pm2 start dist/src/main.js
