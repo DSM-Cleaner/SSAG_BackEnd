@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable } from '@nestjs/common';
 import {
   notConfirmPasswordException,
   notFoundTeacherIdException,
@@ -15,7 +15,7 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 export class TeacherService {
   constructor(
     private readonly teacherRepository: TeacherRepository,
-    private readonly jwtService: JwtService
+    private readonly jwtService: JwtService,
   ) {}
 
   public async teacherLogin(teacherLoginDto: TeacherLoginDTO) {
@@ -30,7 +30,7 @@ export class TeacherService {
 
     const confirmPassword: boolean = await bcrypt.compare(
       password,
-      teacher.password
+      teacher.password,
     );
     if (!confirmPassword) {
       throw notConfirmPasswordException;

@@ -8,16 +8,17 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { TeacherLoginDTO } from './dto/login.dto';
 import { TeacherService } from './teacher.service';
 
-@Controller("teacher")
+@Controller('teacher')
 export class TeacherController {
   constructor(private readonly teacherService: TeacherService) {}
 
   @HttpCode(201)
-  @Post("/login")
+  @Post('/login')
   public async teacherLogin(@Body() teacherLoginDto: TeacherLoginDTO) {
     return await this.teacherService.teacherLogin(teacherLoginDto);
   }
