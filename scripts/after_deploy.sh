@@ -8,6 +8,8 @@ nvm install v16.10.0 -y
 
 npm i -g yarn
 
+yarn build
+
 npm i pm2 -g
 
 # nvm 환경변수 등록
