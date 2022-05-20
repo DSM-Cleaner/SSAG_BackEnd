@@ -12,6 +12,8 @@ cd
 
 cp .env ssag/
 
+cd ssag
+
 yarn prebuild
 
 yarn build
