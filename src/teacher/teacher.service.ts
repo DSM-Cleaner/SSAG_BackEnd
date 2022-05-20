@@ -9,6 +9,7 @@ import { Teacher } from './entities/teacher.entity';
 import { TeacherRepository } from './entities/teacher.repository';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Injectable()
 export class TeacherService {
@@ -37,14 +38,32 @@ export class TeacherService {
 
     const payload = {
       name: name,
-      teacherId: teacher.id,
+      id: teacher.id,
       gender: teacher.gender,
     };
 
     return {
       token: this.jwtService.sign(payload),
-      teacherId: teacher.id,
+      id: teacher.id,
       gender: teacher.gender,
     };
+  }
+
+  public async changePassword(id, changePasswordDto: ChangePasswordDto) {
+    const teacher: Teacher = await this.teacherRepository.findOne({
+      where: { id },
+    });
+    if (!teacher) throw notFoundTeacherIdException;
+
+    const confirmPassword: boolean = await bcrypt.compare(
+      changePasswordDto.password,
+      teacher.password,
+    );
+    if (!confirmPassword) throw notConfirmPasswordException;
+
+    const hashPassword = await bcrypt.hash(changePasswordDto.new_password, 12);
+    changePasswordDto.new_password = hashPassword;
+
+    return await this.teacherRepository.changePassword(id, hashPassword);
   }
 }
