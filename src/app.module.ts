@@ -12,7 +12,7 @@ import { ConfigModule } from "@nestjs/config";
 @Module({
   imports: [
     ConfigModule.forRoot({
-      isGlobal: true
+      isGlobal: true,
     }),
     TypeOrmConfigModule,
     UserModule,
@@ -20,7 +20,6 @@ import { ConfigModule } from "@nestjs/config";
     CleaningModule,
     RoomCleaningModule,
     RoomModule,
-    ConfigModule.forRoot({ isGlobal: true }),
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -8,5 +8,6 @@ import { RoomCleaningService } from "./room-cleaning.service";
   imports: [TypeOrmModule.forFeature([RoomCleaningRepository])],
   controllers: [RoomCleaningController],
   providers: [RoomCleaningService],
+  exports: [RoomCleaningService],
 })
 export class RoomCleaningModule {}

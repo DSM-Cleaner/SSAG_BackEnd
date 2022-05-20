@@ -1,14 +1,18 @@
-import { Room } from 'src/room/entities/room.entity';
+import { Room } from "src/room/entities/room.entity";
 import {
   Column,
   Entity,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
-} from 'typeorm';
+} from "typeorm";
 
-@Entity('roomcleaning')
+@Entity("roomcleaning")
 export class RoomCleaning {
+  constructor(init?: Partial<RoomCleaning>) {
+    Object.assign(this, init);
+  }
+
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -28,9 +32,9 @@ export class RoomCleaning {
   room_id: number;
 
   @ManyToOne(() => Room, (room) => room.roomcleaning, {
-    onUpdate: 'CASCADE',
-    onDelete: 'CASCADE',
+    onUpdate: "CASCADE",
+    onDelete: "CASCADE",
   })
-  @JoinColumn({ name: 'room_id' })
+  @JoinColumn({ name: "room_id" })
   room: Room;
 }

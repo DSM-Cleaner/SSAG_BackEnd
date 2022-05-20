@@ -1,15 +1,21 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from "@nestjs/common";
 
 export const badRequestException = new BadRequestException();
 
 export const notConfirmPasswordException = new BadRequestException(
-  'Not Confirm Password',
+  "Not Confirm Password",
 );
 
 export const notFoundTeacherNameException = new NotFoundException(
-  'NotFound TeacherName',
+  "NotFound TeacherName",
 );
 
 export const notFoundTeacherIdException = new NotFoundException(
-  'NotFound TeacherId',
+  "NotFound TeacherId",
 );
+
+export const notFoundStudentIdException = new NotFoundException(
+  "NotFound StudentId",
+);
+
+export const notFoundRoomIdException = new NotFoundException("NotFound RoomId");
