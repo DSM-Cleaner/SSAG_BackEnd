@@ -8,6 +8,12 @@ nvm install v16.10.0 -y
 
 npm i -g yarn
 
+cd
+
+cp .env ssag/
+
+yarn prebuild
+
 yarn build
 
 npm i pm2 -g
