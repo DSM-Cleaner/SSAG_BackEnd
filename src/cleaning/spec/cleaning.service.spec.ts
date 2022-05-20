@@ -2,7 +2,6 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { CleaningStudentDTO } from "src/cleaning/dto/cleaning-student.dto";
 import { Cleaning } from "src/cleaning/entities/cleaning.entity";
 import { CleaningRepository } from "src/cleaning/entities/cleaning.repository";
-import { CleaningCheckResultDTO } from "src/room-cleaning/dto/cleaning-check-result.dto";
 import { CleaningCheckDTO } from "src/room-cleaning/dto/cleaning-check.dto";
 import { RoomCleaning } from "src/room-cleaning/entities/room-cleaning.entity";
 import { RoomCleaningRepository } from "src/room-cleaning/entities/room-cleaning.repository";
@@ -145,26 +144,20 @@ describe("CleaningService", () => {
             ...cleaningRoom3,
           }),
         );
-      const expectCleaningCheckResult: CleaningCheckResultDTO =
-        new CleaningCheckResultDTO({
-          id: 1,
-          ...cleaningCheck,
-          room_id: 305,
-          student_list: [
-            {
-              id: 1,
-              ...cleaningRoom1,
-            },
-            {
-              id: 2,
-              ...cleaningRoom2,
-            },
-            {
-              id: 3,
-              ...cleaningRoom3,
-            },
-          ],
-        });
+      const expectCleaningCheckResult: CleaningCheckDTO = new CleaningCheckDTO({
+        ...cleaningCheck,
+        student_list: [
+          {
+            ...cleaningRoom1,
+          },
+          {
+            ...cleaningRoom2,
+          },
+          {
+            ...cleaningRoom3,
+          },
+        ],
+      });
 
       const cleaningCheckResult = await service.cleaningCheck(
         305,

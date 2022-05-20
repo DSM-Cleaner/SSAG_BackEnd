@@ -20,7 +20,7 @@ export class CleaningController {
   public async checkCleaning(
     @Param("roomId", ParseIntPipe) roomId: number,
     @Body() cleaningCheck: CleaningCheckDTO,
-  ): Promise<CleaningCheckResultDTO> {
+  ): Promise<CleaningCheckDTO> {
     return this.cleaningService.cleaningCheck(roomId, cleaningCheck);
   }
 }

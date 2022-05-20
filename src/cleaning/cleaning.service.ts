@@ -47,13 +47,21 @@ export class CleaningService {
     }
 
     saved_student_list = await Promise.all(
-      student_list.map(
-        async (student) => await this.cleaningRepository.save(student),
-      ),
+      student_list.map(async (student) => {
+        const cleaning: Cleaning = await this.cleaningRepository.save(student);
+        return new CleaningStudentDTO({
+          clothes: cleaning.clothes,
+          bedding: cleaning.bedding,
+          personalplace: cleaning.personalplace,
+          user_id: cleaning.user_id,
+        });
+      }),
     );
 
-    const cleaningCheckResult: CleaningCheckResultDTO = {
-      ...savedRoomCleaning,
+    const cleaningCheckResult: CleaningCheckDTO = {
+      light: savedRoomCleaning.light,
+      plug: savedRoomCleaning.plug,
+      shoes: savedRoomCleaning.shoes,
       student_list: saved_student_list,
     };
 

@@ -2,7 +2,6 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { CleaningService } from "src/cleaning/cleaning.service";
 import { CleaningStudentDTO } from "src/cleaning/dto/cleaning-student.dto";
 import { CleaningRepository } from "src/cleaning/entities/cleaning.repository";
-import { CleaningCheckResultDTO } from "src/room-cleaning/dto/cleaning-check-result.dto";
 import { CleaningCheckDTO } from "src/room-cleaning/dto/cleaning-check.dto";
 import { RoomCleaningRepository } from "src/room-cleaning/entities/room-cleaning.repository";
 import { RoomCleaningService } from "src/room-cleaning/room-cleaning.service";
@@ -83,28 +82,23 @@ describe("CleaningController", () => {
     });
 
     it("청소 검사 성공", async () => {
-      const cleaningResult = new CleaningCheckResultDTO({
-        id: 1,
+      const cleaningResult = new CleaningCheckDTO({
         ...cleaningCheck,
-        room_id: 305,
         student_list: [
           {
-            id: 1,
             ...cleaningRoom1,
           },
           {
-            id: 2,
             ...cleaningRoom2,
           },
           {
-            id: 3,
             ...cleaningRoom3,
           },
         ],
       });
 
       jest.spyOn(service, "cleaningCheck").mockResolvedValue(cleaningResult);
-      const result: CleaningCheckResultDTO = await controller.checkCleaning(
+      const result: CleaningCheckDTO = await controller.checkCleaning(
         305,
         cleaningCheck,
       );
