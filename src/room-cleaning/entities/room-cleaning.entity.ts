@@ -26,9 +26,6 @@ export class RoomCleaning {
   shoes: boolean;
 
   @Column()
-  comment: string;
-
-  @Column()
   day: string;
 
   @Column()
