@@ -29,6 +29,9 @@ export class RoomCleaning {
   comment: string;
 
   @Column()
+  day: string;
+
+  @Column()
   room_id: number;
 
   @ManyToOne(() => Room, (room) => room.roomcleaning, {

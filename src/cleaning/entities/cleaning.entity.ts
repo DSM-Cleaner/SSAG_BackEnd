@@ -28,6 +28,9 @@ export class Cleaning {
   @Column()
   user_id: number;
 
+  @Column()
+  day: string;
+
   @ManyToOne(() => User, (user) => user.cleaning, {
     onUpdate: "CASCADE",
     onDelete: "CASCADE",
