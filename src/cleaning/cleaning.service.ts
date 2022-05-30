@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import { bindNodeCallback } from "rxjs";
 import { CleaningStudentDTO } from "src/cleaning/dto/cleaning-student.dto";
 import { Cleaning } from "src/cleaning/entities/cleaning.entity";
 import { CleaningRepository } from "src/cleaning/entities/cleaning.repository";
@@ -6,8 +7,10 @@ import { notFoundRoomIdException } from "src/exception/exception.index";
 import { CleaningCheckResultDTO } from "src/room-cleaning/dto/cleaning-check-result.dto";
 import { CleaningCheckDTO } from "src/room-cleaning/dto/cleaning-check.dto";
 import { RoomCleaning } from "src/room-cleaning/entities/room-cleaning.entity";
+import { RoomCleaningRepository } from "src/room-cleaning/entities/room-cleaning.repository";
 import { RoomCleaningService } from "src/room-cleaning/room-cleaning.service";
 import { Room } from "src/room/entities/room.entity";
+import { RoomRepository } from "src/room/entities/room.repository";
 import { RoomService } from "src/room/room.service";
 
 @Injectable()
@@ -16,6 +19,8 @@ export class CleaningService {
     private readonly cleaningRepository: CleaningRepository,
     private readonly roomCleaningService: RoomCleaningService,
     private readonly roomService: RoomService,
+    private readonly roomRepository: RoomRepository,
+    private readonly roomCleaningRepository: RoomCleaningRepository,
   ) {}
 
   public async saveCleaning(cleaning: Cleaning): Promise<Cleaning> {
@@ -66,5 +71,37 @@ export class CleaningService {
     };
 
     return cleaningCheckResult;
+  }
+
+  public async getWeekRooms() {
+    const roomList = await this.roomRepository.getRooms();
+
+    return await Promise.all(
+      roomList.map(async (room) => {
+        const roomCleaningWeek =
+          await this.roomCleaningRepository.getRoomCleaningWeek(room.id);
+
+        return {
+          roomId: room.id,
+          results: await Promise.all(
+            roomCleaningWeek.map(async (day) => {
+              const bedInfos = await this.cleaningRepository.getbedInfo(
+                room.id,
+                day.day,
+              );
+              return {
+                day: day.day,
+                light: day.light,
+                plug: day.plug,
+                shoes: day.shoes,
+                A: bedInfos[0],
+                B: bedInfos[1],
+                C: bedInfos[2],
+              };
+            }),
+          ),
+        };
+      }),
+    );
   }
 }

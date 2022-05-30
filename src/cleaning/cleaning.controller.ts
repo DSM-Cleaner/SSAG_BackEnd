@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
   Param,
@@ -22,5 +23,11 @@ export class CleaningController {
     @Body() cleaningCheck: CleaningCheckDTO,
   ): Promise<CleaningCheckDTO> {
     return this.cleaningService.cleaningCheck(roomId, cleaningCheck);
+  }
+
+  @Get("/week-rooms")
+  @HttpCode(HttpStatus.OK)
+  public async getWeekRooms() {
+    return this.cleaningService.getWeekRooms();
   }
 }
