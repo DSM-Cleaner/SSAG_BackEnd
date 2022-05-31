@@ -16,7 +16,7 @@ import { CleaningCheckDTO } from "src/room-cleaning/dto/cleaning-check.dto";
 export class CleaningController {
   constructor(private readonly cleaningService: CleaningService) {}
 
-  @Get("/check/:roomId/day/:day")
+  @Get("/:roomId/day/:day")
   public async getCleaningCheck(
     @Param("roomId", ParseIntPipe) roomId: number,
     @Param("day") day: string,
