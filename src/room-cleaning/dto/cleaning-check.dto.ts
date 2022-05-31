@@ -1,4 +1,4 @@
-import { IsBoolean } from "class-validator";
+import { IsBoolean, IsString } from "class-validator";
 import { CleaningStudentDTO } from "src/cleaning/dto/cleaning-student.dto";
 
 export class CleaningCheckDTO {
@@ -14,6 +14,9 @@ export class CleaningCheckDTO {
 
   @IsBoolean()
   shoes: boolean;
+
+  @IsString()
+  day: string;
 
   student_list: CleaningStudentDTO[];
 }

@@ -1,21 +1,19 @@
-import { CleaningStudentResultDTO } from "src/cleaning/dto/cleaning-student-result.dto";
+import { IsBoolean } from "class-validator";
+import { StudentCleaningCheckDTO } from "src/cleaning/dto/student-cleaning-check.dto";
 
 export class CleaningCheckResultDTO {
   constructor(init?: Partial<CleaningCheckResultDTO>) {
     Object.assign(this, init);
   }
 
-  id: number;
-
+  @IsBoolean()
   light: boolean;
 
+  @IsBoolean()
   plug: boolean;
 
+  @IsBoolean()
   shoes: boolean;
 
-  room_id: number;
-
-  comment: string;
-
-  student_list: CleaningStudentResultDTO[];
+  student_list: StudentCleaningCheckDTO[];
 }

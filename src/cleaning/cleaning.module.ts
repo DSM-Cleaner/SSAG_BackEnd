@@ -2,6 +2,7 @@ import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { RoomCleaningModule } from "src/room-cleaning/room-cleaning.module";
 import { RoomModule } from "src/room/room.module";
+import { UserModule } from "src/user/user.module";
 import { CleaningController } from "./cleaning.controller";
 import { CleaningService } from "./cleaning.service";
 import { CleaningRepository } from "./entities/cleaning.repository";
@@ -11,6 +12,7 @@ import { CleaningRepository } from "./entities/cleaning.repository";
     TypeOrmModule.forFeature([CleaningRepository]),
     RoomCleaningModule,
     RoomModule,
+    UserModule,
   ],
   controllers: [CleaningController],
   providers: [CleaningService],

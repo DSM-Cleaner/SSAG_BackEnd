@@ -1,4 +1,4 @@
-import { IsBoolean, IsInt } from "class-validator";
+import { IsBoolean, IsInt, IsString } from "class-validator";
 
 export class CleaningStudentDTO {
   constructor(init?: Partial<CleaningStudentDTO>) {
@@ -16,4 +16,7 @@ export class CleaningStudentDTO {
 
   @IsInt()
   user_id: number;
+
+  @IsString()
+  day: string;
 }

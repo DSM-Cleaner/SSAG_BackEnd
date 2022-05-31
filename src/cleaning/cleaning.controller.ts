@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
   Param,
@@ -14,6 +15,14 @@ import { CleaningCheckDTO } from "src/room-cleaning/dto/cleaning-check.dto";
 @Controller("cleaning")
 export class CleaningController {
   constructor(private readonly cleaningService: CleaningService) {}
+
+  @Get("/check/:roomId/day/:day")
+  public async getCleaningCheck(
+    @Param("roomId", ParseIntPipe) roomId: number,
+    @Param("day") day: string,
+  ): Promise<CleaningCheckResultDTO> {
+    return await this.cleaningService.getCleaningCheck(roomId, day);
+  }
 
   @Post("/check/:roomId")
   @HttpCode(HttpStatus.CREATED)
