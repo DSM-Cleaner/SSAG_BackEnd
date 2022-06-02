@@ -1,10 +1,9 @@
 import { Injectable } from "@nestjs/common";
-import { bindNodeCallback } from "rxjs";
+import { notFoundStudentIdException } from "src/exception/exception.index";
 import { CleaningStudentDTO } from "src/cleaning/dto/cleaning-student.dto";
 import { Cleaning } from "src/cleaning/entities/cleaning.entity";
 import { CleaningRepository } from "src/cleaning/entities/cleaning.repository";
 import { notFoundRoomIdException } from "src/exception/exception.index";
-import { CleaningCheckResultDTO } from "src/room-cleaning/dto/cleaning-check-result.dto";
 import { CleaningCheckDTO } from "src/room-cleaning/dto/cleaning-check.dto";
 import { RoomCleaning } from "src/room-cleaning/entities/room-cleaning.entity";
 import { RoomCleaningRepository } from "src/room-cleaning/entities/room-cleaning.repository";
@@ -12,6 +11,10 @@ import { RoomCleaningService } from "src/room-cleaning/room-cleaning.service";
 import { Room } from "src/room/entities/room.entity";
 import { RoomRepository } from "src/room/entities/room.repository";
 import { RoomService } from "src/room/room.service";
+import { User } from "src/user/entities/user.entity";
+import { UserService } from "src/user/user.service";
+import { CleaningCheckResultDTO } from "src/room-cleaning/dto/cleaning-check-result.dto";
+import { StudentCleaningCheckDTO } from "src/cleaning/dto/student-cleaning-check.dto";
 
 @Injectable()
 export class CleaningService {
@@ -19,6 +22,7 @@ export class CleaningService {
     private readonly cleaningRepository: CleaningRepository,
     private readonly roomCleaningService: RoomCleaningService,
     private readonly roomService: RoomService,
+    private readonly userService: UserService,
     private readonly roomRepository: RoomRepository,
     private readonly roomCleaningRepository: RoomCleaningRepository,
   ) {}
@@ -33,7 +37,7 @@ export class CleaningService {
     if (typeof room == "undefined") {
       throw notFoundRoomIdException;
     }
-    const { light, plug, shoes, student_list } = cleaningCheck;
+    const { light, plug, shoes, student_list, day } = cleaningCheck;
     let savedRoomCleaning: RoomCleaning;
     try {
       savedRoomCleaning = await this.roomCleaningService.saveRoomCleaning(
@@ -43,6 +47,7 @@ export class CleaningService {
           shoes: shoes,
           room_id: roomId,
           room: room,
+          day: day,
         }),
       );
     } catch (error) {
@@ -59,6 +64,7 @@ export class CleaningService {
           bedding: cleaning.bedding,
           personalplace: cleaning.personalplace,
           user_id: cleaning.user_id,
+          day: cleaning.day,
         });
       }),
     );
@@ -67,10 +73,47 @@ export class CleaningService {
       light: savedRoomCleaning.light,
       plug: savedRoomCleaning.plug,
       shoes: savedRoomCleaning.shoes,
+      day: savedRoomCleaning.day,
       student_list: saved_student_list,
     };
 
     return cleaningCheckResult;
+  }
+
+  public async getCleaningCheck(roomId: number, day: string) {
+    const student_list: StudentCleaningCheckDTO[] = [];
+
+    const foundUsers: User[] = await this.userService.getUsersWithRoomId(
+      roomId,
+    );
+    if (foundUsers.length === 0) {
+      throw notFoundStudentIdException;
+    }
+
+    foundUsers.map(async (user) => {
+      const cleaning: Cleaning = await this.cleaningRepository.findOne({
+        where: { user_id: user.id, day: day },
+      });
+
+      student_list.push(
+        new StudentCleaningCheckDTO({
+          id: cleaning.id,
+          user_id: user.id,
+          bed: user.bed,
+          name: user.name,
+          clothes: cleaning.clothes,
+          bedding: cleaning.bedding,
+          personalplace: cleaning.personalplace,
+        }),
+      );
+    });
+
+    const roomCleaning = await this.roomCleaningService.getRoomCleaning(roomId);
+
+    return new CleaningCheckResultDTO({
+      ...roomCleaning,
+      student_list: student_list,
+    });
   }
 
   public async getWeekRooms() {

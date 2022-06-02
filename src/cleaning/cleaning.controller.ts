@@ -11,11 +11,20 @@ import {
 } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
 import { CleaningService } from "src/cleaning/cleaning.service";
+import { CleaningCheckResultDTO } from "src/room-cleaning/dto/cleaning-check-result.dto";
 import { CleaningCheckDTO } from "src/room-cleaning/dto/cleaning-check.dto";
 
 @Controller("cleaning")
 export class CleaningController {
   constructor(private readonly cleaningService: CleaningService) {}
+
+  @Get("/:roomId/day/:day")
+  public async getCleaningCheck(
+    @Param("roomId", ParseIntPipe) roomId: number,
+    @Param("day") day: string,
+  ): Promise<CleaningCheckResultDTO> {
+    return await this.cleaningService.getCleaningCheck(roomId, day);
+  }
 
   @Post("/check/:roomId")
   @HttpCode(HttpStatus.CREATED)

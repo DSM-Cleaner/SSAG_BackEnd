@@ -8,6 +8,12 @@ export class RoomCleaningService {
     private readonly roomCleaningRepository: RoomCleaningRepository,
   ) {}
 
+  public async getRoomCleaning(roomId: number): Promise<RoomCleaning> {
+    return this.roomCleaningRepository.findOne({
+      where: { room_id: roomId },
+    });
+  }
+
   public async saveRoomCleaning(
     roomCleaning: RoomCleaning,
   ): Promise<RoomCleaning> {
