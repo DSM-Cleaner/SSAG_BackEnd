@@ -31,9 +31,6 @@ export class RoomCleaning {
   @Column()
   room_id: number;
 
-  @Column()
-  day: string;
-
   @ManyToOne(() => Room, (room) => room.roomcleaning, {
     onUpdate: "CASCADE",
     onDelete: "CASCADE",
