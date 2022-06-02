@@ -7,7 +7,9 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  UseGuards,
 } from "@nestjs/common";
+import { AuthGuard } from "@nestjs/passport";
 import { CleaningService } from "src/cleaning/cleaning.service";
 import { CleaningCheckResultDTO } from "src/room-cleaning/dto/cleaning-check-result.dto";
 import { CleaningCheckDTO } from "src/room-cleaning/dto/cleaning-check.dto";
@@ -31,5 +33,12 @@ export class CleaningController {
     @Body() cleaningCheck: CleaningCheckDTO,
   ): Promise<CleaningCheckDTO> {
     return this.cleaningService.cleaningCheck(roomId, cleaningCheck);
+  }
+
+  @UseGuards(AuthGuard("jwt"))
+  @Get("/week-rooms")
+  @HttpCode(HttpStatus.OK)
+  public async getWeekRooms() {
+    return this.cleaningService.getWeekRooms();
   }
 }

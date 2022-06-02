@@ -17,6 +17,9 @@ export class RoomCleaning {
   id: number;
 
   @Column()
+  day: string;
+
+  @Column()
   light: boolean;
 
   @Column()
@@ -24,9 +27,6 @@ export class RoomCleaning {
 
   @Column()
   shoes: boolean;
-
-  @Column()
-  comment: string;
 
   @Column()
   room_id: number;

@@ -6,8 +6,10 @@ import { CleaningRepository } from "src/cleaning/entities/cleaning.repository";
 import { notFoundRoomIdException } from "src/exception/exception.index";
 import { CleaningCheckDTO } from "src/room-cleaning/dto/cleaning-check.dto";
 import { RoomCleaning } from "src/room-cleaning/entities/room-cleaning.entity";
+import { RoomCleaningRepository } from "src/room-cleaning/entities/room-cleaning.repository";
 import { RoomCleaningService } from "src/room-cleaning/room-cleaning.service";
 import { Room } from "src/room/entities/room.entity";
+import { RoomRepository } from "src/room/entities/room.repository";
 import { RoomService } from "src/room/room.service";
 import { User } from "src/user/entities/user.entity";
 import { UserService } from "src/user/user.service";
@@ -21,6 +23,8 @@ export class CleaningService {
     private readonly roomCleaningService: RoomCleaningService,
     private readonly roomService: RoomService,
     private readonly userService: UserService,
+    private readonly roomRepository: RoomRepository,
+    private readonly roomCleaningRepository: RoomCleaningRepository,
   ) {}
 
   public async saveCleaning(cleaning: Cleaning): Promise<Cleaning> {
@@ -110,5 +114,37 @@ export class CleaningService {
       ...roomCleaning,
       student_list: student_list,
     });
+  }
+
+  public async getWeekRooms() {
+    const roomList = await this.roomRepository.getRooms();
+
+    return await Promise.all(
+      roomList.map(async (room) => {
+        const roomCleaningWeek =
+          await this.roomCleaningRepository.getRoomCleaningWeek(room.id);
+
+        return {
+          roomId: room.id,
+          results: await Promise.all(
+            roomCleaningWeek.map(async (day) => {
+              const bedInfos = await this.cleaningRepository.getbedInfo(
+                room.id,
+                day.day,
+              );
+              return {
+                day: day.day,
+                light: day.light,
+                plug: day.plug,
+                shoes: day.shoes,
+                A: bedInfos[0],
+                B: bedInfos[1],
+                C: bedInfos[2],
+              };
+            }),
+          ),
+        };
+      }),
+    );
   }
 }
