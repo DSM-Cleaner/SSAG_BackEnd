@@ -41,4 +41,11 @@ export class CleaningController {
   public async getWeekRooms() {
     return this.cleaningService.getWeekRooms();
   }
+
+  @Get("/excel")
+  @UseGuards(AuthGuard("jwt"))
+  @HttpCode(HttpStatus.OK)
+  public async getExcel() {
+    return this.cleaningService.getExcelData();
+  }
 }

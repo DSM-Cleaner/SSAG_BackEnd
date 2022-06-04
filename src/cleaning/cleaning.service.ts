@@ -15,6 +15,9 @@ import { User } from "src/user/entities/user.entity";
 import { UserService } from "src/user/user.service";
 import { CleaningCheckResultDTO } from "src/room-cleaning/dto/cleaning-check-result.dto";
 import { StudentCleaningCheckDTO } from "src/cleaning/dto/student-cleaning-check.dto";
+import { utils, WorkBook, WorkSheet, writeFile } from "xlsx";
+import { join } from "path";
+import { stringify } from "querystring";
 
 @Injectable()
 export class CleaningService {
@@ -145,6 +148,41 @@ export class CleaningService {
           ),
         };
       }),
+    );
+  }
+
+  public async getExcelData() {
+    const date: Date = new Date();
+    const workbook: WorkBook = utils.book_new();
+    const worksheet: WorkSheet = workbook.Sheets["Sheet1"];
+
+    const content = [["호실", "이름", "월", "화", "수", "목", "금", "비고"]];
+
+    const roomList = await this.roomService.getRooms();
+    await Promise.all(
+      roomList.map(async (room) => {
+        const roomStudents = await this.userService.getUsersWithRoomId(room.id);
+        roomStudents.forEach((student) => {
+          content.push([
+            room.id.toString(),
+            student.name,
+            "null",
+            "null",
+            "null",
+            "null",
+            "null",
+            "",
+          ]);
+        });
+        // console.log(roomStudents);
+      }),
+    );
+
+    const columns = utils.aoa_to_sheet(content);
+    utils.book_append_sheet(workbook, columns, "sheet1");
+    writeFile(
+      workbook,
+      `우정관-청결호실-점검-결과표${date.getFullYear()}-${date.getMonth()}.xlsx`,
     );
   }
 }
