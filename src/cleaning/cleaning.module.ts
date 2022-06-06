@@ -4,6 +4,7 @@ import { RoomCleaningRepository } from "src/room-cleaning/entities/room-cleaning
 import { RoomCleaningModule } from "src/room-cleaning/room-cleaning.module";
 import { RoomRepository } from "src/room/entities/room.repository";
 import { RoomModule } from "src/room/room.module";
+import { UserRepository } from "src/user/entities/user.repository";
 import { UserModule } from "src/user/user.module";
 import { CleaningController } from "./cleaning.controller";
 import { CleaningService } from "./cleaning.service";
@@ -15,6 +16,7 @@ import { CleaningRepository } from "./entities/cleaning.repository";
       CleaningRepository,
       RoomRepository,
       RoomCleaningRepository,
+      UserRepository,
     ]),
     RoomCleaningModule,
     RoomModule,

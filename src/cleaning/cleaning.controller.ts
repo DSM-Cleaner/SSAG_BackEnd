@@ -41,4 +41,10 @@ export class CleaningController {
   public async getWeekRooms() {
     return this.cleaningService.getWeekRooms();
   }
+
+  @Get("/student")
+  @HttpCode(HttpStatus.OK)
+  public async getStudentCleaning() {
+    return await this.cleaningService.getWeekRooms();
+  }
 }
