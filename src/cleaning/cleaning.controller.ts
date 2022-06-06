@@ -8,6 +8,8 @@ import {
   ParseIntPipe,
   Post,
   UseGuards,
+  Header,
+  Res,
 } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
 import { CleaningService } from "src/cleaning/cleaning.service";
@@ -40,5 +42,13 @@ export class CleaningController {
   @HttpCode(HttpStatus.OK)
   public async getWeekRooms() {
     return this.cleaningService.getWeekRooms();
+  }
+
+  @Get("/student/:studentId")
+  @HttpCode(HttpStatus.OK)
+  public async getStudentCleaning(
+    @Param("studentId", ParseIntPipe) studentId: number,
+  ) {
+    return await this.cleaningService.getStudentCleaning(studentId);
   }
 }

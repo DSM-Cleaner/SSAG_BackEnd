@@ -15,6 +15,7 @@ import { User } from "src/user/entities/user.entity";
 import { UserService } from "src/user/user.service";
 import { CleaningCheckResultDTO } from "src/room-cleaning/dto/cleaning-check-result.dto";
 import { StudentCleaningCheckDTO } from "src/cleaning/dto/student-cleaning-check.dto";
+import { UserRepository } from "src/user/entities/user.repository";
 
 @Injectable()
 export class CleaningService {
@@ -25,6 +26,7 @@ export class CleaningService {
     private readonly userService: UserService,
     private readonly roomRepository: RoomRepository,
     private readonly roomCleaningRepository: RoomCleaningRepository,
+    private readonly userRepository: UserRepository,
   ) {}
 
   public async saveCleaning(cleaning: Cleaning): Promise<Cleaning> {
@@ -146,5 +148,14 @@ export class CleaningService {
         };
       }),
     );
+  }
+
+  public async getStudentCleaning(studentId: number) {
+    const student = await this.userRepository.getStudentInfo(studentId);
+
+    return {
+      student,
+      results: await this.cleaningRepository.getStudentCleaning(studentId),
+    };
   }
 }
