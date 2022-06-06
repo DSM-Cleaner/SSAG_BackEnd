@@ -8,6 +8,8 @@ import {
   ParseIntPipe,
   Post,
   UseGuards,
+  Header,
+  Res,
 } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
 import { CleaningService } from "src/cleaning/cleaning.service";
