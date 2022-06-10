@@ -150,12 +150,20 @@ export class CleaningService {
     );
   }
 
-  public async getStudentCleaning(studentId: number) {
-    const student = await this.userRepository.getStudentInfo(studentId);
+  public async getStudentCleaning(id: number) {
+    const user: User = await this.userRepository.findOne({
+      where: { id },
+    });
+
+    const roomCleaningWeek =
+      await this.roomCleaningRepository.getRoomCleaningWeek(user.room_id);
 
     return {
-      student,
-      results: await this.cleaningRepository.getStudentCleaning(studentId),
+      name: user.name,
+      gcn: user.id,
+      roomId: user.room_id,
+      bed: user.bed,
+      results: roomCleaningWeek,
     };
   }
 }

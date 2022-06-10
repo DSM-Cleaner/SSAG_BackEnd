@@ -44,9 +44,11 @@ export class CleaningController {
     return this.cleaningService.getWeekRooms();
   }
 
-  @Get("/student")
+  @Get("/student/:studentId")
   @HttpCode(HttpStatus.OK)
-  public async getStudentCleaning() {
-    return await this.cleaningService.getWeekRooms();
+  public async getStudentCleaning(
+    @Param("studentId", ParseIntPipe) studentId: number,
+  ) {
+    return await this.cleaningService.getStudentCleaning(studentId);
   }
 }
