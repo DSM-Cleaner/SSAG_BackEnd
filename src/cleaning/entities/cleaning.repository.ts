@@ -26,6 +26,6 @@ export class CleaningRepository extends Repository<Cleaning> {
       .addSelect("cleaning.personalplace", "personalplace")
       .where("user.id= :id", { id: id })
       .andWhere("cleaning.day= :day", { day: day })
-      .getRawMany();
+      .getRawOne();
   }
 }
