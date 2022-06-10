@@ -160,7 +160,7 @@ export class CleaningService {
 
     const results = await Promise.all(
       roomCleaningWeek.map(async (ele) => {
-        const temp = await this.cleaningRepository.studentCleaningInfo(
+        const studentInfo = await this.cleaningRepository.studentCleaningInfo(
           id,
           ele.day,
         );
@@ -170,13 +170,12 @@ export class CleaningService {
           light: ele.light,
           plug: ele.plug,
           shoes: ele.shoes,
-          bedding: temp?.bedding,
-          clothes: temp?.clothes,
-          personalplace: temp?.personalplace,
+          bedding: studentInfo?.bedding,
+          clothes: studentInfo?.clothes,
+          personalplace: studentInfo?.personalplace,
         };
       }),
     );
-
     return {
       name: user.name,
       gcn: user.id,
