@@ -181,7 +181,6 @@ export class CleaningService {
     );
   }
 
-<<<<
   public async getExcelData() {
     const date: Date = new Date();
     const workbook: WorkBook = utils.book_new();
