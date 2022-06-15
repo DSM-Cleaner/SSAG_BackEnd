@@ -18,19 +18,14 @@ export class CleaningRepository extends Repository<Cleaning> {
       .getRawMany();
   }
 
-  public async getStudentCleaning(studentId) {
+  public async studentCleaningInfo(id, day) {
     return await this.createQueryBuilder("cleaning")
       .leftJoin("cleaning.user", "user")
-      .leftJoin("user.room", "room")
-      .leftJoin("room.roomcleaning", "roomcleaning")
-      .select("roomcleaning.day", "day")
-      .addSelect("roomcleaning.light", "light")
-      .addSelect("roomcleaing.plug", "plug")
-      .addSelect("roomcleaning.shoes", "shoes")
+      .select("cleaning.bedding", "bedding")
       .addSelect("cleaning.clothes", "clothes")
-      .addSelect("cleaning.bedding", "bedding")
       .addSelect("cleaning.personalplace", "personalplace")
-      .where("user.id= :id", { id: studentId })
-      .getRawMany();
+      .where("user.id= :id", { id: id })
+      .andWhere("cleaning.day= :day", { day: day })
+      .getRawOne();
   }
 }
