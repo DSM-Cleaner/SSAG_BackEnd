@@ -18,6 +18,7 @@ import { StudentCleaningCheckDTO } from "src/cleaning/dto/student-cleaning-check
 import { Sheet, utils, WorkBook, WorkSheet, writeFile } from "xlsx";
 import { join } from "path";
 import { stringify } from "querystring";
+import { UserRepository } from "src/user/entities/user.repository";
 
 @Injectable()
 export class CleaningService {
@@ -28,6 +29,7 @@ export class CleaningService {
     private readonly userService: UserService,
     private readonly roomRepository: RoomRepository,
     private readonly roomCleaningRepository: RoomCleaningRepository,
+    private readonly userRepository: UserRepository,
   ) {}
 
   public async saveCleaning(cleaning: Cleaning): Promise<Cleaning> {
@@ -288,5 +290,14 @@ export class CleaningService {
       workbook,
       `우정관-청결호실-점검-결과표${date.getFullYear()}-${date.getMonth()}.xlsx`,
     );
+  }
+
+  public async getStudentCleaning(studentId: number) {
+    const student = await this.userRepository.getStudentInfo(studentId);
+
+    return {
+      student,
+      results: await this.cleaningRepository.getStudentCleaning(studentId),
+    };
   }
 }

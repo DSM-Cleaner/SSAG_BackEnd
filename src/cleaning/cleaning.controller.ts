@@ -48,4 +48,10 @@ export class CleaningController {
   public async getExcel() {
     return this.cleaningService.getExcelData();
   }
+
+  @Get("/student")
+  @HttpCode(HttpStatus.OK)
+  public async getStudentCleaning() {
+    return await this.cleaningService.getWeekRooms();
+  }
 }
