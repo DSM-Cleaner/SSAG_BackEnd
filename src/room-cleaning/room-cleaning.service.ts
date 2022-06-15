@@ -14,6 +14,12 @@ export class RoomCleaningService {
     });
   }
 
+  public async getRoomCleaningListWithRoomId(
+    roomId: number,
+  ): Promise<RoomCleaning[]> {
+    return this.roomCleaningRepository.find({ where: { room_id: roomId } });
+  }
+
   public async saveRoomCleaning(
     roomCleaning: RoomCleaning,
   ): Promise<RoomCleaning> {
