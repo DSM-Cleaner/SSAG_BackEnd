@@ -15,7 +15,7 @@ import { User } from "src/user/entities/user.entity";
 import { UserService } from "src/user/user.service";
 import { CleaningCheckResultDTO } from "src/room-cleaning/dto/cleaning-check-result.dto";
 import { StudentCleaningCheckDTO } from "src/cleaning/dto/student-cleaning-check.dto";
-import { utils, WorkBook, WorkSheet, writeFile } from "xlsx";
+import { Sheet, utils, WorkBook, WorkSheet, writeFile } from "xlsx";
 import { join } from "path";
 import { stringify } from "querystring";
 
@@ -98,25 +98,53 @@ export class CleaningService {
         where: { user_id: user.id, day: day },
       });
 
-      student_list.push(
-        new StudentCleaningCheckDTO({
-          id: cleaning.id,
-          user_id: user.id,
-          bed: user.bed,
-          name: user.name,
-          clothes: cleaning.clothes,
-          bedding: cleaning.bedding,
-          personalplace: cleaning.personalplace,
-        }),
-      );
+      if (cleaning == undefined) {
+        student_list.push(
+          new StudentCleaningCheckDTO({
+            id: null,
+            user_id: user.id,
+            bed: user.bed,
+            name: user.name,
+            clothes: null,
+            bedding: null,
+            personalplace: null,
+          }),
+        );
+      } else {
+        student_list.push(
+          new StudentCleaningCheckDTO({
+            id: cleaning.id,
+            user_id: user.id,
+            bed: user.bed,
+            name: user.name,
+            clothes: cleaning.clothes,
+            bedding: cleaning.bedding,
+            personalplace: cleaning.personalplace,
+          }),
+        );
+      }
     });
 
-    const roomCleaning = await this.roomCleaningService.getRoomCleaning(roomId);
-
-    return new CleaningCheckResultDTO({
-      ...roomCleaning,
-      student_list: student_list,
-    });
+    const roomCleaning: RoomCleaning =
+      await this.roomCleaningService.getRoomCleaning(roomId);
+    if (roomCleaning == undefined) {
+      return new CleaningCheckResultDTO({
+        ...{
+          id: null,
+          day: null,
+          light: null,
+          plug: null,
+          shoes: null,
+          room_id: roomId,
+        },
+        student_list: student_list,
+      });
+    } else {
+      return new CleaningCheckResultDTO({
+        ...roomCleaning,
+        student_list: student_list,
+      });
+    }
   }
 
   public async getWeekRooms() {
@@ -154,32 +182,108 @@ export class CleaningService {
   public async getExcelData() {
     const date: Date = new Date();
     const workbook: WorkBook = utils.book_new();
-    const worksheet: WorkSheet = workbook.Sheets["Sheet1"];
+    let ws: WorkSheet = workbook.Sheets["Sheet1"];
 
-    const content = [["호실", "이름", "월", "화", "수", "목", "금", "비고"]];
+    // const content = [["호실", "이름", "월", "화", "수", "목", "금", "비고"]];
 
-    const roomList = await this.roomService.getRooms();
-    await Promise.all(
-      roomList.map(async (room) => {
-        const roomStudents = await this.userService.getUsersWithRoomId(room.id);
-        roomStudents.forEach((student) => {
-          content.push([
-            room.id.toString(),
-            student.name,
-            "null",
-            "null",
-            "null",
-            "null",
-            "null",
-            "",
-          ]);
-        });
-        // console.log(roomStudents);
-      }),
-    );
+    let content = [];
 
     const columns = utils.aoa_to_sheet(content);
     utils.book_append_sheet(workbook, columns, "sheet1");
+
+    const positions = ["A1", "J1", "S1", "AB1", "AK1"];
+    let mergeColumns = [0, 9, 18, 27, 36];
+    let positionNum = 0;
+    let currentStudents = 0;
+    let beforePosition = 0;
+    let afterPosition = 0;
+
+    const mergeList = [];
+
+    const roomList = await this.roomService.getRooms();
+
+    for (const room of roomList) {
+      const roomStudents = await this.userService.getUsersWithRoomId(room.id);
+      if (currentStudents + roomStudents.length >= 50) {
+        // console.log(
+        //   `currentStudents: ${currentStudents}, roomStudents: ${roomStudents.length}, roomId: ${room.id}`,
+        // );
+        currentStudents = 0;
+        positionNum += 1;
+        content = [];
+        beforePosition = 0;
+        afterPosition = 0;
+      }
+      if (currentStudents == 0) {
+        content.push(["호실", "이름", "월", "화", "수", "목", "금", "비고"]);
+      }
+      currentStudents += roomStudents.length;
+      roomStudents.forEach(async (student) => {
+        // 엑셀로 출력할 때  사용하는 청소 검사결과는 어떻게 가져옴?
+        // await this.cleaningRepository.find({ where: { user_id: student.id } });
+        const roomCleaningList: RoomCleaning[] =
+          await this.roomCleaningService.getRoomCleaningListWithRoomId(room.id);
+        const cleaningList: Cleaning[] = await this.cleaningRepository.find({
+          where: { user_id: student.id },
+        });
+        const weekCheck: any[] = [room.id.toString(), student.name];
+        // 반복문 넣기
+        content.push([...weekCheck]);
+      });
+      // console.log(room.id);
+      if (roomStudents.length == 2) {
+        content.push([room.id.toString(), "", "", "", "", "", "", ""]);
+      }
+      ws = utils.sheet_add_aoa(ws, content, {
+        origin: `${positions[positionNum]}`,
+      });
+
+      if (roomStudents.length == 2) {
+        afterPosition = beforePosition + roomStudents.length;
+      } else {
+        afterPosition = beforePosition + roomStudents.length - 1;
+      }
+
+      // console.log(
+      //   `roomStudentLength: ${roomStudents.length}, beforePosition: ${beforePosition}, afterPosition: ${afterPosition}, allStudents: ${allStudents}`,
+      // );
+
+      if (beforePosition == 0) {
+        // console.log(
+        //   `beforePosition: ${beforePosition}, afterPosition: ${afterPosition}`,
+        // );
+        if (roomStudents.length == 2) {
+          mergeList.push({
+            s: { c: mergeColumns[positionNum], r: 1 },
+            e: { c: mergeColumns[positionNum], r: roomStudents.length + 1 },
+          });
+        } else {
+          mergeList.push({
+            s: { c: mergeColumns[positionNum], r: 1 },
+            e: { c: mergeColumns[positionNum], r: roomStudents.length },
+          });
+        }
+        beforePosition += 1;
+        afterPosition += 1;
+      } else {
+        // console.log(
+        //   `beforePosition: ${beforePosition}, afterPosition: ${afterPosition}`,
+        // );
+        mergeList.push({
+          s: { c: mergeColumns[positionNum], r: beforePosition },
+          e: { c: mergeColumns[positionNum], r: afterPosition },
+        });
+      }
+
+      beforePosition = afterPosition + 1;
+    }
+
+    // console.log(ws);
+
+    ws["!merges"] = mergeList;
+
+    workbook.Sheets.sheet1 = ws;
+
     writeFile(
       workbook,
       `우정관-청결호실-점검-결과표${date.getFullYear()}-${date.getMonth()}.xlsx`,

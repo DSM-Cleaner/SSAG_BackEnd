@@ -10,7 +10,10 @@ export class UserService {
     private readonly jwtService: JwtService,
   ) {}
   async getUsersWithRoomId(roomId: number): Promise<User[]> {
-    return this.userRepository.find({ where: { room_id: roomId } });
+    return this.userRepository.find({
+      where: { room_id: roomId },
+      order: { bed: "ASC" },
+    });
   }
 
   async compareCode(code: string): Promise<User> {
