@@ -44,6 +44,7 @@ export class CleaningController {
     return this.cleaningService.getWeekRooms();
   }
 
+
   @Get("/excel")
   @UseGuards(AuthGuard("jwt"))
   @HttpCode(HttpStatus.OK)
