@@ -26,10 +26,6 @@ export class CleaningRepository extends Repository<Cleaning> {
       .addSelect("cleaning.personalplace", "personalplace")
       .where("user.id= :id", { id: id })
       .andWhere("cleaning.day= :day", { day: day })
-<<<<<<< HEAD
-      .getRawOne();
-=======
       .getRawMany();
->>>>>>> 32f722b (Update 학생용주간호실청소점검 조회 (#20))
   }
 }
