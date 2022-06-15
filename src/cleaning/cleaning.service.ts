@@ -159,20 +159,19 @@ export class CleaningService {
       await this.roomCleaningRepository.getRoomCleaningWeek(user.room_id);
 
     const results = await Promise.all(
-      roomCleaningWeek.map(async (ele) => {
-        const studentInfo = await this.cleaningRepository.studentCleaningInfo(
+      roomCleaningWeek.map(async (roomCleaning) => {
+        const cleaning = await this.cleaningRepository.studentCleaningInfo(
           id,
-          ele.day,
+          roomCleaning.day,
         );
-
         return {
-          day: ele.day,
-          light: ele.light,
-          plug: ele.plug,
-          shoes: ele.shoes,
-          bedding: studentInfo?.bedding,
-          clothes: studentInfo?.clothes,
-          personalplace: studentInfo?.personalplace,
+          day: roomCleaning.day,
+          light: roomCleaning.light,
+          plug: roomCleaning.plug,
+          shoes: roomCleaning.shoes,
+          bedding: cleaning?.bedding,
+          clothes: cleaning?.clothes,
+          personalplace: cleaning?.personalplace,
         };
       }),
     );
