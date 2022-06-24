@@ -38,6 +38,7 @@ export class CleaningService {
 
   public async cleaningCheck(roomId: number, cleaningCheck: CleaningCheckDTO) {
     let saved_student_list = [];
+    const date = new Date();
     const room: Room = await this.roomService.getRoom(roomId);
     if (typeof room == "undefined") {
       throw notFoundRoomIdException;
@@ -47,9 +48,9 @@ export class CleaningService {
     try {
       savedRoomCleaning = await this.roomCleaningService.saveRoomCleaning(
         new RoomCleaning({
-          light: light,
-          plug: plug,
-          shoes: shoes,
+          light: light ?? false,
+          plug: plug ?? false,
+          shoes: shoes ?? false,
           room_id: roomId,
           room: room,
           day: day,
@@ -186,14 +187,12 @@ export class CleaningService {
     const workbook: WorkBook = utils.book_new();
     let ws: WorkSheet = workbook.Sheets["Sheet1"];
 
-    // const content = [["호실", "이름", "월", "화", "수", "목", "금", "비고"]];
-
     let content = [];
 
     const columns = utils.aoa_to_sheet(content);
     utils.book_append_sheet(workbook, columns, "sheet1");
 
-    const positions = ["A1", "J1", "S1", "AB1", "AK1"];
+    const positions = ["A1", "J2", "S2", "AB2", "AK2"];
     let mergeColumns = [0, 9, 18, 27, 36];
     let positionNum = 0;
     let currentStudents = 0;
@@ -203,6 +202,12 @@ export class CleaningService {
     const mergeList = [];
 
     const roomList = await this.roomService.getRooms();
+
+    content.push([
+      `청결호실 점검 결과표 (${date.getFullYear()}년 ${
+        date.getMonth() + 1
+      }월 ${this.weekNumberByMonth(date)}주)`,
+    ]);
 
     for (const room of roomList) {
       const roomStudents = await this.userService.getUsersWithRoomId(room.id);
@@ -216,24 +221,75 @@ export class CleaningService {
         beforePosition = 0;
         afterPosition = 0;
       }
+
       if (currentStudents == 0) {
         content.push(["호실", "이름", "월", "화", "수", "목", "금", "비고"]);
       }
       currentStudents += roomStudents.length;
       roomStudents.forEach(async (student) => {
-        // 엑셀로 출력할 때  사용하는 청소 검사결과는 어떻게 가져옴?
-        // await this.cleaningRepository.find({ where: { user_id: student.id } });
         const roomCleaningList: RoomCleaning[] =
           await this.roomCleaningService.getRoomCleaningListWithRoomId(room.id);
         const cleaningList: Cleaning[] = await this.cleaningRepository.find({
           where: { user_id: student.id },
         });
         const weekCheck: any[] = [room.id.toString(), student.name];
-        // 반복문 넣기
+
+        // 월, 화, 수, 목, 금
+        if (roomCleaningList.length === 0) {
+          for (let i = 0; i < 5; i++) {
+            weekCheck.push([""]);
+          }
+        } else if (
+          roomCleaningList.length !== 0 &&
+          roomCleaningList.length !== 5
+        ) {
+          for (let i = 0; i < 5; i++) {
+            if (roomCleaningList[i] == undefined) {
+              weekCheck.push([""]);
+            } else {
+              if (i === 1 || i === 4) {
+                weekCheck.push(
+                  roomCleaningList[i].light &&
+                    roomCleaningList[i].plug &&
+                    roomCleaningList[i].shoes &&
+                    (typeof cleaningList[i] == "undefined"
+                      ? 0
+                      : cleaningList[i].bedding) &&
+                    (typeof cleaningList[i] == "undefined"
+                      ? 0
+                      : cleaningList[i].clothes) &&
+                    (typeof cleaningList[i] == "undefined"
+                      ? 0
+                      : cleaningList[i].personalplace)
+                    ? "O"
+                    : "X",
+                );
+              } else {
+                // console.log("test: ", cleaningList);
+                weekCheck.push(
+                  roomCleaningList[i].light &&
+                    roomCleaningList[i].plug &&
+                    roomCleaningList[i].shoes &&
+                    (typeof cleaningList[i] == "undefined"
+                      ? 0
+                      : cleaningList[i].bedding) &&
+                    (typeof cleaningList[i] == "undefined"
+                      ? 0
+                      : cleaningList[i].clothes)
+                    ? "O"
+                    : "X",
+                );
+              }
+            }
+          }
+        }
+        //비고
+        weekCheck.push([""]);
         content.push([...weekCheck]);
       });
       // console.log(room.id);
       if (roomStudents.length == 2) {
+        // console.log(roomStudents);
         content.push([room.id.toString(), "", "", "", "", "", "", ""]);
       }
       ws = utils.sheet_add_aoa(ws, content, {
@@ -251,22 +307,22 @@ export class CleaningService {
       // );
 
       if (beforePosition == 0) {
-        // console.log(
-        //   `beforePosition: ${beforePosition}, afterPosition: ${afterPosition}`,
-        // );
+        beforePosition += 2;
+        afterPosition += 2;
         if (roomStudents.length == 2) {
           mergeList.push({
-            s: { c: mergeColumns[positionNum], r: 1 },
-            e: { c: mergeColumns[positionNum], r: roomStudents.length + 1 },
+            s: { c: mergeColumns[positionNum], r: 2 },
+            e: { c: mergeColumns[positionNum], r: roomStudents.length },
           });
         } else {
           mergeList.push({
-            s: { c: mergeColumns[positionNum], r: 1 },
-            e: { c: mergeColumns[positionNum], r: roomStudents.length },
+            s: { c: mergeColumns[positionNum], r: 2 },
+            e: { c: mergeColumns[positionNum], r: roomStudents.length + 1 },
           });
         }
-        beforePosition += 1;
-        afterPosition += 1;
+        // console.log(
+        //   `beforePosition: ${beforePosition}, afterPosition: ${afterPosition}`,
+        // );
       } else {
         // console.log(
         //   `beforePosition: ${beforePosition}, afterPosition: ${afterPosition}`,
@@ -280,7 +336,10 @@ export class CleaningService {
       beforePosition = afterPosition + 1;
     }
 
-    // console.log(ws);
+    mergeList.push({
+      s: { c: 0, r: 0 },
+      e: { c: 43, r: 0 },
+    });
 
     ws["!merges"] = mergeList;
 
@@ -288,7 +347,9 @@ export class CleaningService {
 
     writeFile(
       workbook,
-      `우정관-청결호실-점검-결과표${date.getFullYear()}-${date.getMonth()}.xlsx`,
+      `우정관-청결호실-점검-결과표${date.getFullYear()}-${
+        date.getMonth() + 1
+      }.xlsx`,
     );
   }
 
@@ -328,5 +389,63 @@ export class CleaningService {
       bed: user.bed,
       results,
     };
+  }
+
+  private weekNumberByMonth(dateFormat) {
+    const inputDate = new Date(dateFormat);
+
+    let year = inputDate.getFullYear();
+    let month = inputDate.getMonth() + 1;
+
+    const weekNumberBySunFnc = (paramDate) => {
+      const year = paramDate.getFullYear();
+      const month = paramDate.getMonth();
+      const date = paramDate.getDate();
+
+      const firstDate = new Date(year, month, 1);
+      const lastDate = new Date(year, month + 1, 0);
+      const firstDayOfWeek = firstDate.getDay() === 0 ? 7 : firstDate.getDay();
+      const lastDayOfWeek = lastDate.getDay();
+
+      const lastDay = lastDate.getDate();
+
+      const fistWeekCheck = firstDayOfWeek == 7;
+      const lastWeekCheck =
+        lastDayOfWeek === 1 ||
+        lastDayOfWeek === 2 ||
+        lastDayOfWeek === 3 ||
+        firstDayOfWeek === 5 ||
+        firstDayOfWeek === 6;
+
+      // 해당 달이 총 몇주까지 있는지
+      const lastWeekNo = Math.ceil(firstDayOfWeek - 1 + lastDay / 7);
+
+      // 날짜 기준으로 몇 주차 인지
+      let weekNo: number | string = Math.ceil((firstDayOfWeek - 1 + date) / 7);
+      if (weekNo === 1 && fistWeekCheck) {
+        weekNo = "prev";
+      } else if (weekNo === lastWeekNo && lastWeekCheck) {
+        weekNo = "next";
+      } else if (fistWeekCheck) {
+        weekNo = weekNo - 1;
+      }
+
+      return weekNo;
+    };
+
+    let weekNo = weekNumberBySunFnc(inputDate);
+
+    // 이전달의 마지막 주차일때
+    const afterDate = new Date(year, month, 0);
+    year = month === 1 ? year - 1 : year;
+    month = month === 1 ? 12 : month - 1;
+    weekNo = weekNumberBySunFnc(afterDate);
+
+    if (weekNo === "next") {
+      year = month === 12 ? year + 1 : year;
+      month = month === 12 ? 1 : month + 1;
+      weekNo = 1;
+    }
+    return weekNo;
   }
 }
