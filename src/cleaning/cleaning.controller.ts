@@ -10,6 +10,7 @@ import {
   UseGuards,
   Header,
   Res,
+  Redirect,
 } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
 import { CleaningService } from "src/cleaning/cleaning.service";
@@ -44,12 +45,13 @@ export class CleaningController {
     return this.cleaningService.getWeekRooms();
   }
 
-
   @Get("/excel")
-  @UseGuards(AuthGuard("jwt"))
+  @Redirect("/file")
+  // @UseGuards(AuthGuard("jwt"))
   @HttpCode(HttpStatus.OK)
   public async getExcel() {
-    return this.cleaningService.getExcelData();
+    const fileName: string = await this.cleaningService.getExcelData();
+    return { url: `/file/${fileName}` };
   }
 
   @Get("/student/:studentId")
