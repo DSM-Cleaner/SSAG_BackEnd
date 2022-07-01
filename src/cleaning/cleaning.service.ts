@@ -96,7 +96,7 @@ export class CleaningService {
       throw notFoundStudentIdException;
     }
 
-    foundUsers.map(async (user) => {
+    for (const user of foundUsers) {
       const cleaning: Cleaning = await this.cleaningRepository.findOne({
         where: { user_id: user.id, day: day },
       });
@@ -126,7 +126,7 @@ export class CleaningService {
           }),
         );
       }
-    });
+    }
 
     const roomCleaning: RoomCleaning =
       await this.roomCleaningService.getRoomCleaning(roomId);
@@ -199,7 +199,7 @@ export class CleaningService {
     let beforePosition = 0;
     let afterPosition = 0;
 
-    const mergeList = [];
+    let mergeList: any[] = [];
 
     const roomList = await this.roomService.getRooms();
 
@@ -212,9 +212,6 @@ export class CleaningService {
     for (const room of roomList) {
       const roomStudents = await this.userService.getUsersWithRoomId(room.id);
       if (currentStudents + roomStudents.length >= 50) {
-        // console.log(
-        //   `currentStudents: ${currentStudents}, roomStudents: ${roomStudents.length}, roomId: ${room.id}`,
-        // );
         currentStudents = 0;
         positionNum += 1;
         content = [];
@@ -226,7 +223,8 @@ export class CleaningService {
         content.push(["호실", "이름", "월", "화", "수", "목", "금", "비고"]);
       }
       currentStudents += roomStudents.length;
-      roomStudents.forEach(async (student) => {
+
+      for (const student of roomStudents) {
         const roomCleaningList: RoomCleaning[] =
           await this.roomCleaningService.getRoomCleaningListWithRoomId(room.id);
         const cleaningList: Cleaning[] = await this.cleaningRepository.find({
@@ -247,17 +245,19 @@ export class CleaningService {
             if (roomCleaningList[i] == undefined) {
               weekCheck.push([""]);
             } else {
+              const isClean: number =
+                roomCleaningList[i].light &&
+                roomCleaningList[i].plug &&
+                roomCleaningList[i].shoes &&
+                (typeof cleaningList[i] == "undefined"
+                  ? 0
+                  : cleaningList[i].bedding) &&
+                (typeof cleaningList[i] == "undefined"
+                  ? 0
+                  : cleaningList[i].clothes);
               if (i === 1 || i === 4) {
                 weekCheck.push(
-                  roomCleaningList[i].light &&
-                    roomCleaningList[i].plug &&
-                    roomCleaningList[i].shoes &&
-                    (typeof cleaningList[i] == "undefined"
-                      ? 0
-                      : cleaningList[i].bedding) &&
-                    (typeof cleaningList[i] == "undefined"
-                      ? 0
-                      : cleaningList[i].clothes) &&
+                  isClean &&
                     (typeof cleaningList[i] == "undefined"
                       ? 0
                       : cleaningList[i].personalplace)
@@ -265,20 +265,7 @@ export class CleaningService {
                     : "X",
                 );
               } else {
-                // console.log("test: ", cleaningList);
-                weekCheck.push(
-                  roomCleaningList[i].light &&
-                    roomCleaningList[i].plug &&
-                    roomCleaningList[i].shoes &&
-                    (typeof cleaningList[i] == "undefined"
-                      ? 0
-                      : cleaningList[i].bedding) &&
-                    (typeof cleaningList[i] == "undefined"
-                      ? 0
-                      : cleaningList[i].clothes)
-                    ? "O"
-                    : "X",
-                );
+                weekCheck.push(isClean ? "O" : "X");
               }
             }
           }
@@ -286,12 +273,12 @@ export class CleaningService {
         //비고
         weekCheck.push([""]);
         content.push([...weekCheck]);
-      });
-      // console.log(room.id);
+      }
+
       if (roomStudents.length == 2) {
-        // console.log(roomStudents);
         content.push([room.id.toString(), "", "", "", "", "", "", ""]);
       }
+
       ws = utils.sheet_add_aoa(ws, content, {
         origin: `${positions[positionNum]}`,
       });
@@ -302,31 +289,22 @@ export class CleaningService {
         afterPosition = beforePosition + roomStudents.length - 1;
       }
 
-      // console.log(
-      //   `roomStudentLength: ${roomStudents.length}, beforePosition: ${beforePosition}, afterPosition: ${afterPosition}, allStudents: ${allStudents}`,
-      // );
-
       if (beforePosition == 0) {
         beforePosition += 2;
         afterPosition += 2;
         if (roomStudents.length == 2) {
+          console.log(roomStudents);
           mergeList.push({
             s: { c: mergeColumns[positionNum], r: 2 },
-            e: { c: mergeColumns[positionNum], r: roomStudents.length },
+            e: { c: mergeColumns[positionNum], r: 2 + roomStudents.length },
           });
         } else {
           mergeList.push({
             s: { c: mergeColumns[positionNum], r: 2 },
-            e: { c: mergeColumns[positionNum], r: roomStudents.length + 1 },
+            e: { c: mergeColumns[positionNum], r: 2 + roomStudents.length + 1 },
           });
         }
-        // console.log(
-        //   `beforePosition: ${beforePosition}, afterPosition: ${afterPosition}`,
-        // );
       } else {
-        // console.log(
-        //   `beforePosition: ${beforePosition}, afterPosition: ${afterPosition}`,
-        // );
         mergeList.push({
           s: { c: mergeColumns[positionNum], r: beforePosition },
           e: { c: mergeColumns[positionNum], r: afterPosition },
@@ -336,10 +314,9 @@ export class CleaningService {
       beforePosition = afterPosition + 1;
     }
 
-    mergeList.push({
-      s: { c: 0, r: 0 },
-      e: { c: 43, r: 0 },
-    });
+    mergeList = this.titleMerge(mergeList);
+
+    mergeList = this.separationSpaceMerge(mergeList);
 
     ws["!merges"] = mergeList;
 
@@ -351,6 +328,41 @@ export class CleaningService {
         date.getMonth() + 1
       }.xlsx`,
     );
+
+    return `우정관-청결호실-점검-결과표${date.getFullYear()}-${
+      date.getMonth() + 1
+    }.xlsx`;
+  }
+
+  private titleMerge(mergeList: any[]): any[] {
+    mergeList.push({
+      s: { c: 0, r: 0 },
+      e: { c: 43, r: 0 },
+    });
+
+    return mergeList;
+  }
+
+  //공백줄 머지
+  private separationSpaceMerge(mergeList: any[]): any[] {
+    mergeList.push({
+      s: { c: 8, r: 1 },
+      e: { c: 8, r: 52 },
+    });
+    mergeList.push({
+      s: { c: 17, r: 1 },
+      e: { c: 17, r: 52 },
+    });
+    mergeList.push({
+      s: { c: 26, r: 1 },
+      e: { c: 26, r: 52 },
+    });
+    mergeList.push({
+      s: { c: 35, r: 1 },
+      e: { c: 35, r: 52 },
+    });
+
+    return mergeList;
   }
 
   public async getStudentCleaningWithStudentId(studentId: number) {
