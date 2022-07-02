@@ -14,6 +14,15 @@ export class RoomCleaningService {
     });
   }
 
+  public async getRoomCleaningByDay(
+    roomId: number,
+    day: string,
+  ): Promise<RoomCleaning> {
+    return this.roomCleaningRepository.findOne({
+      where: { room_id: roomId, day: day },
+    });
+  }
+
   public async getRoomCleaningListWithRoomId(
     roomId: number,
   ): Promise<RoomCleaning[]> {

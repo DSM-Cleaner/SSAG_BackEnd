@@ -15,9 +15,7 @@ import { User } from "src/user/entities/user.entity";
 import { UserService } from "src/user/user.service";
 import { CleaningCheckResultDTO } from "src/room-cleaning/dto/cleaning-check-result.dto";
 import { StudentCleaningCheckDTO } from "src/cleaning/dto/student-cleaning-check.dto";
-import { Sheet, utils, WorkBook, WorkSheet, writeFile } from "xlsx";
-import { join } from "path";
-import { stringify } from "querystring";
+import { utils, WorkBook, WorkSheet, writeFile } from "xlsx";
 import { UserRepository } from "src/user/entities/user.repository";
 
 @Injectable()
@@ -38,16 +36,23 @@ export class CleaningService {
 
   public async cleaningCheck(roomId: number, cleaningCheck: CleaningCheckDTO) {
     let saved_student_list = [];
-    const date = new Date();
     const room: Room = await this.roomService.getRoom(roomId);
     if (typeof room == "undefined") {
       throw notFoundRoomIdException;
     }
     const { light, plug, shoes, student_list, day } = cleaningCheck;
     let savedRoomCleaning: RoomCleaning;
+
+    const foundRoomCleaning: RoomCleaning =
+      await this.roomCleaningService.getRoomCleaningByDay(roomId, day);
+
     try {
       savedRoomCleaning = await this.roomCleaningService.saveRoomCleaning(
         new RoomCleaning({
+          id:
+            typeof foundRoomCleaning == "undefined"
+              ? null
+              : foundRoomCleaning.id,
           light: light ?? false,
           plug: plug ?? false,
           shoes: shoes ?? false,
@@ -64,7 +69,16 @@ export class CleaningService {
 
     saved_student_list = await Promise.all(
       student_list.map(async (student) => {
-        const cleaning: Cleaning = await this.cleaningRepository.save(student);
+        const foundCleaning: Cleaning = await this.cleaningRepository.findOne({
+          where: { user_id: student.user_id, day: student.day },
+        });
+
+        const cleaning: Cleaning = await this.cleaningRepository.save(
+          new Cleaning({
+            id: typeof foundCleaning == "undefined" ? null : foundCleaning.id,
+            ...student,
+          }),
+        );
         return new CleaningStudentDTO({
           clothes: cleaning.clothes,
           bedding: cleaning.bedding,

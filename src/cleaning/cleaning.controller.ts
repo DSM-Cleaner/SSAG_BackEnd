@@ -47,7 +47,7 @@ export class CleaningController {
 
   @Get("/excel")
   @Redirect("/file")
-  // @UseGuards(AuthGuard("jwt"))
+  @UseGuards(AuthGuard("jwt"))
   @HttpCode(HttpStatus.OK)
   public async getExcel() {
     const fileName: string = await this.cleaningService.getExcelData();
