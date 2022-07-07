@@ -6,10 +6,6 @@ import { RoomRepository } from "src/room/entities/room.repository";
 export class RoomService {
   constructor(private readonly roomRepository: RoomRepository) {}
 
-  public async getRoom(roomId: number): Promise<Room> {
-    return await this.roomRepository.findOne(roomId);
-  }
-
   public async getRooms(): Promise<Room[]> {
     return await this.roomRepository.find();
   }
