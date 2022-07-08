@@ -7,26 +7,18 @@ import { notFoundRoomIdException } from "src/exception/exception.index";
 import { CleaningCheckDTO } from "src/room-cleaning/dto/cleaning-check.dto";
 import { RoomCleaning } from "src/room-cleaning/entities/room-cleaning.entity";
 import { RoomCleaningRepository } from "src/room-cleaning/entities/room-cleaning.repository";
-import { RoomCleaningService } from "src/room-cleaning/room-cleaning.service";
 import { Room } from "src/room/entities/room.entity";
 import { RoomRepository } from "src/room/entities/room.repository";
-import { RoomService } from "src/room/room.service";
 import { User } from "src/user/entities/user.entity";
-import { UserService } from "src/user/user.service";
 import { CleaningCheckResultDTO } from "src/room-cleaning/dto/cleaning-check-result.dto";
 import { StudentCleaningCheckDTO } from "src/cleaning/dto/student-cleaning-check.dto";
-import { Sheet, utils, WorkBook, WorkSheet, writeFile } from "xlsx";
-import { join } from "path";
-import { stringify } from "querystring";
+import { utils, WorkBook, WorkSheet, writeFile } from "xlsx";
 import { UserRepository } from "src/user/entities/user.repository";
 
 @Injectable()
 export class CleaningService {
   constructor(
     private readonly cleaningRepository: CleaningRepository,
-    private readonly roomCleaningService: RoomCleaningService,
-    private readonly roomService: RoomService,
-    private readonly userService: UserService,
     private readonly roomRepository: RoomRepository,
     private readonly roomCleaningRepository: RoomCleaningRepository,
     private readonly userRepository: UserRepository,
@@ -38,16 +30,25 @@ export class CleaningService {
 
   public async cleaningCheck(roomId: number, cleaningCheck: CleaningCheckDTO) {
     let saved_student_list = [];
-    const date = new Date();
-    const room: Room = await this.roomService.getRoom(roomId);
+    const room: Room = await this.roomRepository.findOne(roomId);
     if (typeof room == "undefined") {
       throw notFoundRoomIdException;
     }
     const { light, plug, shoes, student_list, day } = cleaningCheck;
     let savedRoomCleaning: RoomCleaning;
+
+    const foundRoomCleaning: RoomCleaning =
+      await this.roomCleaningRepository.findOne({
+        where: { room_id: roomId, day: day },
+      });
+
     try {
-      savedRoomCleaning = await this.roomCleaningService.saveRoomCleaning(
+      savedRoomCleaning = await this.roomCleaningRepository.save(
         new RoomCleaning({
+          id:
+            typeof foundRoomCleaning == "undefined"
+              ? null
+              : foundRoomCleaning.id,
           light: light ?? false,
           plug: plug ?? false,
           shoes: shoes ?? false,
@@ -64,7 +65,16 @@ export class CleaningService {
 
     saved_student_list = await Promise.all(
       student_list.map(async (student) => {
-        const cleaning: Cleaning = await this.cleaningRepository.save(student);
+        const foundCleaning: Cleaning = await this.cleaningRepository.findOne({
+          where: { user_id: student.user_id, day: student.day },
+        });
+
+        const cleaning: Cleaning = await this.cleaningRepository.save(
+          new Cleaning({
+            id: typeof foundCleaning == "undefined" ? null : foundCleaning.id,
+            ...student,
+          }),
+        );
         return new CleaningStudentDTO({
           clothes: cleaning.clothes,
           bedding: cleaning.bedding,
@@ -89,9 +99,10 @@ export class CleaningService {
   public async getCleaningCheck(roomId: number, day: string) {
     const student_list: StudentCleaningCheckDTO[] = [];
 
-    const foundUsers: User[] = await this.userService.getUsersWithRoomId(
-      roomId,
-    );
+    const foundUsers: User[] = await this.userRepository.find({
+      where: { room_id: roomId },
+      order: { bed: "ASC" },
+    });
     if (foundUsers.length === 0) {
       throw notFoundStudentIdException;
     }
@@ -129,7 +140,9 @@ export class CleaningService {
     }
 
     const roomCleaning: RoomCleaning =
-      await this.roomCleaningService.getRoomCleaning(roomId);
+      await this.roomCleaningRepository.findOne({
+        where: { room_id: roomId },
+      });
     if (roomCleaning == undefined) {
       return new CleaningCheckResultDTO({
         ...{
@@ -194,14 +207,10 @@ export class CleaningService {
 
     const positions = ["A1", "J2", "S2", "AB2", "AK2"];
     let mergeColumns = [0, 9, 18, 27, 36];
-    let positionNum = 0;
-    let currentStudents = 0;
-    let beforePosition = 0;
-    let afterPosition = 0;
-
     let mergeList: any[] = [];
+    let positionCounter = 0;
 
-    const roomList = await this.roomService.getRooms();
+    let counter = 2;
 
     content.push([
       `청결호실 점검 결과표 (${date.getFullYear()}년 ${
@@ -209,109 +218,64 @@ export class CleaningService {
       }월 ${this.weekNumberByMonth(date)}주)`,
     ]);
 
-    for (const room of roomList) {
-      const roomStudents = await this.userService.getUsersWithRoomId(room.id);
-      if (currentStudents + roomStudents.length >= 50) {
-        currentStudents = 0;
-        positionNum += 1;
-        content = [];
-        beforePosition = 0;
-        afterPosition = 0;
-      }
+    const roomList = await this.roomRepository.getRoomsWithStudent();
+    const existData = await this.roomRepository.getAllData();
 
-      if (currentStudents == 0) {
+    for (const room of roomList) {
+      if (counter >= 50) {
+        counter = 2;
+        content = [];
+        positionCounter += 1;
+      }
+      if (counter == 2) {
         content.push(["호실", "이름", "월", "화", "수", "목", "금", "비고"]);
       }
-      currentStudents += roomStudents.length;
-
-      for (const student of roomStudents) {
-        const roomCleaningList: RoomCleaning[] =
-          await this.roomCleaningService.getRoomCleaningListWithRoomId(room.id);
-        const cleaningList: Cleaning[] = await this.cleaningRepository.find({
-          where: { user_id: student.id },
-        });
-        const weekCheck: any[] = [room.id.toString(), student.name];
-
-        // 월, 화, 수, 목, 금
-        if (roomCleaningList.length === 0) {
-          for (let i = 0; i < 5; i++) {
-            weekCheck.push([""]);
-          }
-        } else if (
-          roomCleaningList.length !== 0 &&
-          roomCleaningList.length !== 5
-        ) {
-          for (let i = 0; i < 5; i++) {
-            if (roomCleaningList[i] == undefined) {
-              weekCheck.push([""]);
-            } else {
-              const isClean: number =
-                roomCleaningList[i].light &&
-                roomCleaningList[i].plug &&
-                roomCleaningList[i].shoes &&
-                (typeof cleaningList[i] == "undefined"
-                  ? 0
-                  : cleaningList[i].bedding) &&
-                (typeof cleaningList[i] == "undefined"
-                  ? 0
-                  : cleaningList[i].clothes);
-              if (i === 1 || i === 4) {
-                weekCheck.push(
-                  isClean &&
-                    (typeof cleaningList[i] == "undefined"
-                      ? 0
-                      : cleaningList[i].personalplace)
-                    ? "O"
-                    : "X",
-                );
-              } else {
-                weekCheck.push(isClean ? "O" : "X");
-              }
-            }
+      for (const student of room.user) {
+        const foundData: Room = existData.find(
+          (existRoom, index, rooms) => existRoom.id == room.id,
+        );
+        const studentCleaning = [room.id.toString(), student.name];
+        for (let i = 0; i < 5; i++) {
+          if (!!foundData) {
+            studentCleaning.push(
+              foundData.roomcleaning[i].light &&
+                foundData.roomcleaning[i].plug &&
+                foundData.roomcleaning[i].shoes &&
+                student.cleaning[i].clothes &&
+                student.cleaning[i].bedding &&
+                (student.cleaning[i].personalplace ?? true)
+                ? "O"
+                : "X",
+            );
+          } else {
+            studentCleaning.push("");
           }
         }
-        //비고
-        weekCheck.push([""]);
-        content.push([...weekCheck]);
+        content.push(studentCleaning);
       }
-
-      if (roomStudents.length == 2) {
+      if (room.user.length == 2) {
         content.push([room.id.toString(), "", "", "", "", "", "", ""]);
-      }
-
-      ws = utils.sheet_add_aoa(ws, content, {
-        origin: `${positions[positionNum]}`,
-      });
-
-      if (roomStudents.length == 2) {
-        afterPosition = beforePosition + roomStudents.length;
-      } else {
-        afterPosition = beforePosition + roomStudents.length - 1;
-      }
-
-      if (beforePosition == 0) {
-        beforePosition += 2;
-        afterPosition += 2;
-        if (roomStudents.length == 2) {
-          console.log(roomStudents);
-          mergeList.push({
-            s: { c: mergeColumns[positionNum], r: 2 },
-            e: { c: mergeColumns[positionNum], r: 2 + roomStudents.length },
-          });
-        } else {
-          mergeList.push({
-            s: { c: mergeColumns[positionNum], r: 2 },
-            e: { c: mergeColumns[positionNum], r: 2 + roomStudents.length + 1 },
-          });
-        }
+        mergeList.push({
+          s: { c: mergeColumns[positionCounter], r: counter },
+          e: {
+            c: mergeColumns[positionCounter],
+            r: counter + room.user.length,
+          },
+        });
+        counter += 3;
       } else {
         mergeList.push({
-          s: { c: mergeColumns[positionNum], r: beforePosition },
-          e: { c: mergeColumns[positionNum], r: afterPosition },
+          s: { c: mergeColumns[positionCounter], r: counter },
+          e: {
+            c: mergeColumns[positionCounter],
+            r: counter + room.user.length - 1,
+          },
         });
+        counter += room.user.length;
       }
-
-      beforePosition = afterPosition + 1;
+      ws = utils.sheet_add_aoa(ws, content, {
+        origin: `${positions[positionCounter]}`,
+      });
     }
 
     mergeList = this.titleMerge(mergeList);
