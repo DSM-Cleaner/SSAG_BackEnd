@@ -50,8 +50,13 @@ export class CleaningController {
   // @UseGuards(AuthGuard("jwt"))
   @HttpCode(HttpStatus.OK)
   public async getExcel() {
-    const fileName: string = await this.cleaningService.getExcelData();
-    return { url: `/file/${fileName}` };
+    const date: Date = new Date();
+    await this.cleaningService.getExcelData();
+    return {
+      url: `/file/우정관-청결호실-점검-결과표${date.getFullYear()}-${
+        date.getMonth() + 1
+      }.xlsx`,
+    };
   }
 
   @Get("/student/:studentId")
