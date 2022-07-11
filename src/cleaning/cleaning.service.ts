@@ -235,8 +235,13 @@ export class CleaningService {
           (existRoom, index, rooms) => existRoom.id == room.id,
         );
         const studentCleaning = [room.id.toString(), student.name];
-        for (let i = 0; i < 5; i++) {
-          if (!!foundData) {
+        for (
+          let i = 0;
+          i <
+          (typeof foundData == "undefined" ? 5 : foundData.roomcleaning.length);
+          i++
+        ) {
+          if (!(typeof foundData == "undefined")) {
             studentCleaning.push(
               foundData.roomcleaning[i].light &&
                 foundData.roomcleaning[i].plug &&
