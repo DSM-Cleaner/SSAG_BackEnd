@@ -242,13 +242,22 @@ export class CleaningService {
           i++
         ) {
           if (!(typeof foundData == "undefined")) {
+            const user: User = foundData.user.find(
+              (foundUser, index, rooms) => foundUser.id == student.id,
+            );
             studentCleaning.push(
               foundData.roomcleaning[i].light &&
                 foundData.roomcleaning[i].plug &&
                 foundData.roomcleaning[i].shoes &&
-                student.cleaning[i].clothes &&
-                student.cleaning[i].bedding &&
-                (student.cleaning[i].personalplace ?? true)
+                (typeof user == "undefined"
+                  ? false
+                  : user.cleaning[i].clothes) &&
+                (typeof user == "undefined"
+                  ? false
+                  : user.cleaning[i].bedding) &&
+                (typeof user == "undefined"
+                  ? false
+                  : user.cleaning[i].personalplace ?? true)
                 ? "O"
                 : "X",
             );
