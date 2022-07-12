@@ -54,7 +54,7 @@ export class CleaningController {
     return { url: `/file/${fileName}` };
   }
 
-  @Get("/student/:studentId")
+  @Get("/:studentId")
   @HttpCode(HttpStatus.OK)
   public async getStudentCleaning(
     @Param("studentId", ParseIntPipe) studentId: number,
